@@ -40,7 +40,7 @@ GLboolean Game::init()
 		return GL_FALSE;
 	}
 
-	this->bamboo = this->mEngine->mLoader->LoadFile("D:\\etc\\naturekit\\Models\\glTF format\\bamboo.gltf");
+	this->bamboo = this->mEngine->mLoader->LoadFile("resources\\models\\bamboo.gltf");
 	basicShader = new Shader("resources/shaders/shader.vs", "resources/shaders/shader.fs");
 	simpleShader = new Shader("resources/shaders/simple.vs", "resources/shaders/simple.fs");
 

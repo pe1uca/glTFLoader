@@ -167,6 +167,8 @@
     <ClInclude Include="Types.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="resources\models\bamboo.bin" />
+    <None Include="resources\models\bamboo.gltf" />
     <None Include="resources\shaders\shader.fs" />
     <None Include="resources\shaders\shader.vs" />
     <None Include="resources\shaders\simple.fs" />

@@ -16,6 +16,9 @@
     <Filter Include="Resource Files\shaders">
       <UniqueIdentifier>{97df5fe4-73ca-475b-ac71-311a443b4d73}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\models">
+      <UniqueIdentifier>{cd449b7b-f004-4a89-8196-ff6fd529ceca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -78,6 +81,12 @@
     </None>
     <None Include="resources\shaders\simple.vs">
       <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="resources\models\bamboo.bin">
+      <Filter>Resource Files\models</Filter>
+    </None>
+    <None Include="resources\models\bamboo.gltf">
+      <Filter>Resource Files\models</Filter>
     </None>
   </ItemGroup>
 </Project>
