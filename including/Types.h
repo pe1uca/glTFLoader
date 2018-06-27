@@ -3,6 +3,8 @@
 #include <glad\glad.h>
 #include <string>
 
+#include "Shader.h"
+
 struct Vertex
 {
 	glm::vec3 position;
@@ -87,7 +89,7 @@ public:
 		delete[] nodes;
 		delete[] materials;
 	}
-	void draw(GLuint sceneIndex);
+	void draw(GLuint sceneIndex, Shader shader);
 };
 
 struct Buffer

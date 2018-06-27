@@ -15,6 +15,7 @@ glTFFile* Loader::LoadFile(const char *filePath)
 	Buffer* buffers;
 	BufferView* views;
 	Accessor* accessors;
+	Material *materials;
 	GLuint buffersCount, viewsCount, accessorsCount;
 	rapidjson::Document json;
 	std::ifstream fileStream;
@@ -139,6 +140,19 @@ glTFFile* Loader::LoadFile(const char *filePath)
 		}*/
 	}
 
+	value = json["materials"];
+	result->materialsCount = value.Size();
+	materials = new Material[result->materialsCount];
+	result->materials = materials;
+	for (GLuint i = 0; i < result->materialsCount; i++)
+	{
+		rapidjson::Value& baseColor = value[i]["pbrMetallicRoughness"]["baseColorFactor"];
+		materials[i].color.r = baseColor[0].GetFloat();
+		materials[i].color.g = baseColor[1].GetFloat();
+		materials[i].color.b = baseColor[2].GetFloat();
+		materials[i].color.a = baseColor[3].GetFloat();
+	}
+
 	Mesh* meshes = nullptr;
 	value = json["meshes"]; 
 	result->meshesCount = value.Size();
@@ -184,7 +198,24 @@ glTFFile* Loader::LoadFile(const char *filePath)
 			{
 				BufferView* view = &views[indicesAccess];
 				Buffer* buffer = &buffers[view->buffer];
-				indices[k] = *(GLushort*)&buffer->data[view->offset + (accessors[indicesAccess].size * k)];
+				switch (accessors[indicesAccess].componentType)
+				{
+				case GL_BYTE:
+					indices[k] = *(GLbyte*)&buffer->data[view->offset + (accessors[indicesAccess].size * k)];
+					break;
+				case GL_UNSIGNED_BYTE:
+					indices[k] = *(GLubyte*)&buffer->data[view->offset + (accessors[indicesAccess].size * k)];
+					break;
+				case GL_SHORT:
+					indices[k] = *(GLshort*)&buffer->data[view->offset + (accessors[indicesAccess].size * k)];
+					break;
+				case GL_UNSIGNED_SHORT:
+					indices[k] = *(GLushort*)&buffer->data[view->offset + (accessors[indicesAccess].size * k)];
+					break;
+				case GL_UNSIGNED_INT:
+					indices[k] = *(GLuint*)&buffer->data[view->offset + (accessors[indicesAccess].size * k)];
+					break;
+				}
 			}
 
 			for (GLuint k = 0; k < verticesCount; k++)

@@ -40,6 +40,7 @@ GLboolean Game::init()
 		return GL_FALSE;
 	}
 
+	//this->bamboo = this->mEngine->mLoader->LoadFile("D:\\etc\\naturekit\\Models\\glTF format\\cliffBrown_waterfallTop.gltf");
 	this->bamboo = this->mEngine->mLoader->LoadFile("resources\\models\\bamboo.gltf");
 	basicShader = new Shader("resources/shaders/shader.vs", "resources/shaders/shader.fs");
 	simpleShader = new Shader("resources/shaders/simple.vs", "resources/shaders/simple.fs");
@@ -60,7 +61,7 @@ GLboolean Game::init()
 	
 	projection = glm::perspective(glm::radians(this->mEngine->GetCamera()->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	return GL_TRUE;
 }
@@ -95,11 +96,11 @@ void Game::render()
 	basicShader->use();
 	basicShader->setMat4("projection", this->projection);
 	basicShader->setMat4("view", this->view);
-	basicShader->setMat4("model", model);
-	this->bamboo->draw(0);
+	this->bamboo->draw(0, *basicShader);
 
 	glBindVertexArray(planeVAO);
 	basicShader->setMat4("model", glm::mat4());
+	basicShader->setVec4("baseColor", glm::vec4(1.0f));
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	this->mEngine->render();

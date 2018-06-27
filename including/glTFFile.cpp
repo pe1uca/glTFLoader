@@ -1,4 +1,5 @@
 #include "Types.h"
+#include <glm\gtc\matrix_transform.hpp>
 #include <iostream>
 
 void Primitive::setup(Vertex *vertices, GLuint verticesCount, GLuint *indices, GLuint indicesCount, GLuint material)
@@ -45,7 +46,7 @@ void Primitive::draw()
 	glBindVertexArray(0);
 }
 
-void glTFFile::draw(GLuint sceneIndex)
+void glTFFile::draw(GLuint sceneIndex, Shader shader)
 {
 	if (this->scenesCount <= sceneIndex)
 		return;
@@ -59,8 +60,12 @@ void glTFFile::draw(GLuint sceneIndex)
 			return;
 		Node *node = &this->nodes[nodeIndex];
 		Mesh *mesh = &this->meshes[node->mesh];
+		glm::mat4 model;
+		model = glm::translate(model, node->translation);
+		shader.setMat4("model", model);
 		for (GLuint j = 0; j < mesh->primitivesCount; j++)
 		{
+			shader.setVec4("baseColor", this->materials[mesh->primitives[j].material].color);
 			mesh->primitives[j].draw();
 		}
 	}
