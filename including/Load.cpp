@@ -146,11 +146,16 @@ glTFFile* Loader::LoadFile(const char *filePath)
 	result->materials = materials;
 	for (GLuint i = 0; i < result->materialsCount; i++)
 	{
-		rapidjson::Value& baseColor = value[i]["pbrMetallicRoughness"]["baseColorFactor"];
-		materials[i].color.r = baseColor[0].GetFloat();
-		materials[i].color.g = baseColor[1].GetFloat();
-		materials[i].color.b = baseColor[2].GetFloat();
-		materials[i].color.a = baseColor[3].GetFloat();
+		materials[i].color = glm::vec4(1.0f);
+		if (value[i]["pbrMetallicRoughness"].HasMember("baseColorFactor"))
+		{
+			rapidjson::Value& baseColor = value[i]["pbrMetallicRoughness"]["baseColorFactor"];
+			materials[i].color.r = baseColor[0].GetFloat();
+			materials[i].color.g = baseColor[1].GetFloat();
+			materials[i].color.b = baseColor[2].GetFloat();
+			materials[i].color.a = baseColor[3].GetFloat();
+		}
+		materials[i].metallic = value[i]["pbrMetallicRoughness"]["metallicFactor"].GetFloat();
 	}
 
 	Mesh* meshes = nullptr;
@@ -262,10 +267,36 @@ glTFFile* Loader::LoadFile(const char *filePath)
 	for (GLuint i = 0; i < result->nodesCount; i++)
 	{
 		Node* node = &nodes[i];
-		node->mesh = value[i]["mesh"].GetUint();
-		node->translation.x = value[i]["translation"][0].GetFloat();
-		node->translation.y = value[i]["translation"][1].GetFloat();
-		node->translation.z = value[i]["translation"][2].GetFloat();
+		if (value[i].HasMember("mesh"))
+		{
+			node->mesh = value[i]["mesh"].GetUint();
+			node->hasMesh = GL_TRUE;
+		}
+		if (value[i].HasMember("children") && value[i]["children"].IsArray() && !value[i]["children"].Empty())
+		{
+			node->childrenCount = value[i]["children"].Size();
+			node->children = new GLuint[node->childrenCount];
+			for (GLuint j = 0; j < node->childrenCount; j++)
+			{
+				node->children[j] = value[i]["children"][j].GetUint();
+				nodes[j].parent = i;
+				nodes[j].isRoot = GL_FALSE;
+			}
+		}
+		node->translation = glm::vec3(0.0);
+		node->scale = glm::vec3(1.0);
+		if (value[i].HasMember("translation") && value[i]["translation"].IsArray() && !value[i]["translation"].Empty())
+		{
+			node->translation.x = value[i]["translation"][0].GetFloat();
+			node->translation.y = value[i]["translation"][1].GetFloat();
+			node->translation.z = value[i]["translation"][2].GetFloat();
+		}
+		if (value[i].HasMember("scale") && value[i]["scale"].IsArray() && !value[i]["scale"].Empty())
+		{
+			node->scale.x = value[i]["scale"][0].GetFloat();
+			node->scale.y = value[i]["scale"][1].GetFloat();
+			node->scale.z = value[i]["scale"][2].GetFloat();
+		}
 	}
 
 	Scene* scenes;
@@ -288,5 +319,6 @@ glTFFile* Loader::LoadFile(const char *filePath)
 
 	delete[] buffers;
 	delete[] views;
+	delete[] accessors;
 	return result;
 }

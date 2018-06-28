@@ -68,6 +68,9 @@
     <ClInclude Include="Types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dirent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\shader.fs">
@@ -87,6 +90,12 @@
     </None>
     <None Include="resources\models\bamboo.gltf">
       <Filter>Resource Files\models</Filter>
+    </None>
+    <None Include="resources\shaders\PBR.fs">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\PBR.vs">
+      <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

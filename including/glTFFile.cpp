@@ -46,7 +46,7 @@ void Primitive::draw()
 	glBindVertexArray(0);
 }
 
-void glTFFile::draw(GLuint sceneIndex, Shader shader)
+void glTFFile::draw(GLuint sceneIndex, Shader *shader)
 {
 	if (this->scenesCount <= sceneIndex)
 		return;
@@ -57,16 +57,43 @@ void glTFFile::draw(GLuint sceneIndex, Shader shader)
 	{
 		GLuint nodeIndex = scene->nodes[i];
 		if (this->nodesCount <= nodeIndex)
-			return;
-		Node *node = &this->nodes[nodeIndex];
+			continue;
+		this->drawNode(nodeIndex, glm::mat4(), shader);
+	}
+}
+
+void glTFFile::drawNode(GLuint index, glm::mat4 parentM, Shader *shader)
+{
+	Node *node = &this->nodes[index];
+	glm::mat4 model;
+	model = glm::scale(model, node->scale);
+	model = glm::translate(model, node->translation);
+	model = parentM * model;
+
+	if (node->hasMesh)
+	{
 		Mesh *mesh = &this->meshes[node->mesh];
-		glm::mat4 model;
-		model = glm::translate(model, node->translation);
-		shader.setMat4("model", model);
+		shader->setMat4("model", model);
 		for (GLuint j = 0; j < mesh->primitivesCount; j++)
 		{
-			shader.setVec4("baseColor", this->materials[mesh->primitives[j].material].color);
+			Material *material = &this->materials[mesh->primitives[j].material];
+			shader->setVec4("baseColorFactor", material->color);
+			shader->setFloat("metallic", material->metallic);
+			shader->setFloat("roughness", 1.0f);
+			shader->setFloat("ao", 1.0f);
+			shader->setVec3("albedo", glm::vec3(1.0f));
 			mesh->primitives[j].draw();
+		}
+	}
+
+	if (nullptr != node->children)
+	{
+		for (GLuint i = 0; i < node->childrenCount; i++)
+		{
+			GLuint nodeIndex = node->children[i];
+			if (this->nodesCount <= nodeIndex)
+				continue;
+			this->drawNode(nodeIndex, model, shader);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "dirent.h"
 
 #include <iostream>
 
@@ -20,6 +21,19 @@ float triangleVertices[] = {
 	-0.5f, 0.0f,  0.0f,		0.0, 1.0, 0.0,	2.0f, 0.0f
 };
 
+glm::vec3 lightPositions[] = {
+	glm::vec3(-10.0f,  10.0f, 10.0f),
+	glm::vec3(10.0f,  10.0f, 10.0f),
+	glm::vec3(-10.0f, -10.0f, 10.0f),
+	glm::vec3(10.0f, -10.0f, 10.0f),
+};
+glm::vec3 lightColors[] = {
+	glm::vec3(300.0f, 300.0f, 300.0f),
+	glm::vec3(300.0f, 300.0f, 300.0f),
+	glm::vec3(300.0f, 300.0f, 300.0f),
+	glm::vec3(300.0f, 300.0f, 300.0f)
+};
+
 Game::Game() :
 	mExitValue(Engine::SUCCESS)
 {
@@ -39,11 +53,43 @@ GLboolean Game::init()
 		this->mExitValue = Engine::FAILURE;
 		return GL_FALSE;
 	}
-
-	//this->bamboo = this->mEngine->mLoader->LoadFile("D:\\etc\\naturekit\\Models\\glTF format\\cliffBrown_waterfallTop.gltf");
+	/*this->bamboo = this->mEngine->mLoader->LoadFile("D:\\etc\\naturekit\\Models\\glTF format\\palmDetailed_large.gltf");
+	struct dirent **dirp;
+	modelsCount = scandir("D:\\etc\\naturekit\\Models\\glTF format\\", &dirp, [](const struct dirent *dir) 
+	{
+		const char *s = dir->d_name;
+		int len = strlen(s) - 5; // index of start of . in .mp3
+		if (len >= 0)
+		{
+			if (strncmp(s + len, ".gltf", 5) == 0)
+			{
+				return 1;
+			}
+		}
+		return 0;
+	}, alphasort);
+	if (modelsCount > 0)
+	{
+		this->models = new glTFFile*[modelsCount];
+		for (GLuint i = 0; i < modelsCount; i++)
+		{
+			std::cout << dirp[i]->d_name << std::endl;
+			if (i == 150)
+				std::cout << "to crash" << std::endl;
+			this->models[i] = this->mEngine->mLoader->LoadFile(std::string("D:\\etc\\naturekit\\Models\\glTF format\\").append(dirp[i]->d_name).c_str());
+		}
+	}*/
 	this->bamboo = this->mEngine->mLoader->LoadFile("resources\\models\\bamboo.gltf");
 	basicShader = new Shader("resources/shaders/shader.vs", "resources/shaders/shader.fs");
 	simpleShader = new Shader("resources/shaders/simple.vs", "resources/shaders/simple.fs");
+	pbrShader = new Shader("resources/shaders/PBR.vs", "resources/shaders/PBR.fs");
+
+	pbrShader->use();
+	for (GLuint i = 0; i < 4; i++)
+	{
+		pbrShader->setVec3("lightPositions[" + std::to_string(i) + "]", lightPositions[i]);
+		pbrShader->setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+	}
 
 	GLuint planeVBO, triangleVBO;
 	glGenVertexArrays(1, &planeVAO);
@@ -96,9 +142,20 @@ void Game::render()
 	basicShader->use();
 	basicShader->setMat4("projection", this->projection);
 	basicShader->setMat4("view", this->view);
-	this->bamboo->draw(0, *basicShader);
+	//this->bamboo->draw(0, *basicShader);
+
+	pbrShader->use();
+	pbrShader->setMat4("projection", this->projection);
+	pbrShader->setMat4("view", this->view);
+	pbrShader->setVec3("camPos", this->mEngine->GetCamera()->Position);
+	this->bamboo->draw(0, pbrShader);
+	for (GLuint i = 0; i < modelsCount; i++)
+	{
+		this->models[i]->draw(0, pbrShader);
+	}
 
 	glBindVertexArray(planeVAO);
+	basicShader->use();
 	basicShader->setMat4("model", glm::mat4());
 	basicShader->setVec4("baseColor", glm::vec4(1.0f));
 	glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -111,6 +168,7 @@ void Game::release()
 
 	delete this->basicShader;
 	delete this->bamboo;
+	//delete this->models;
 	this->mEngine->release();
 }
 

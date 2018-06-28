@@ -31,8 +31,9 @@ private:
 
 	glm::mat4 projection;
 	glm::mat4 view;
-	glTFFile* bamboo;
-	Shader *basicShader, *simpleShader;
+	glTFFile **models, *bamboo;
+	GLuint modelsCount = 0;
+	Shader *basicShader, *simpleShader, *pbrShader;
 	GLuint planeVAO, triangleVAO;
 
 	void update();

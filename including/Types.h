@@ -17,6 +17,7 @@ struct Vertex
 struct Material
 {
 	glm::vec4 color;
+	GLfloat metallic;
 };
 
 class Primitive
@@ -56,7 +57,18 @@ public:
 struct Node
 {
 	glm::vec3 translation;
+	glm::vec3 scale;
+	GLuint *children;
+	GLuint childrenCount;
+	GLboolean isRoot;
+	GLuint parent;
 	GLuint mesh;
+	GLboolean hasMesh;
+	Node() : children(nullptr), childrenCount(0), isRoot(GL_TRUE), hasMesh(GL_FALSE) {}
+	~Node()
+	{
+		delete[] children;
+	}
 };
 
 struct Scene
@@ -89,7 +101,10 @@ public:
 		delete[] nodes;
 		delete[] materials;
 	}
-	void draw(GLuint sceneIndex, Shader shader);
+	void draw(GLuint sceneIndex, Shader *shader);
+
+private:
+	void drawNode(GLuint index, glm::mat4 parentM, Shader *shader);
 };
 
 struct Buffer
