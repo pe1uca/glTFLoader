@@ -20,8 +20,6 @@ public:
 	Engine::EXIT_CODE GetExitValue();
 
 private:
-	const GLuint SCR_WIDTH = 1280;
-	const GLuint SCR_HEIGHT = 720;
 	GLfloat deltaTime = 0.0f;
 	GLfloat lastFrame = 0.0f;
 	GLdouble currentFrame = 0.0f;
@@ -32,6 +30,7 @@ private:
 	glm::mat4 projection;
 	glm::mat4 view;
 	glTFFile **models, *bamboo;
+	glTFFile *selectedItem;
 	GLuint modelsCount = 0;
 	Shader *basicShader, *simpleShader, *pbrShader;
 	GLuint planeVAO, triangleVAO;
@@ -41,4 +40,6 @@ private:
 	void processInput();
 
 	void render();
+
+	Ray CastRay(GLfloat x, GLfloat y);
 };

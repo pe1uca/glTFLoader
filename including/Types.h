@@ -2,6 +2,8 @@
 #include <glm\glm.hpp>
 #include <glad\glad.h>
 #include <string>
+#include <vector>
+#include <limits>
 
 #include "Shader.h"
 
@@ -20,6 +22,26 @@ struct Material
 	GLfloat metallic;
 };
 
+struct Box
+{
+	glm::vec3 min;
+	glm::vec3 max;
+	Box() : min(std::numeric_limits<GLfloat>::max()), max(-std::numeric_limits<GLfloat>::max()) {}
+	~Box() {}
+};
+
+struct Line
+{
+	glm::vec3 start;
+	glm::vec3 end;
+};
+
+struct Ray
+{
+	glm::vec3 origin;
+	glm::vec3 direction;
+};
+
 class Primitive
 {
 public:
@@ -28,7 +50,8 @@ public:
 	GLuint material;
 	GLuint verticesCount;
 	GLuint indicesCount;
-	Primitive() :vertices(nullptr), indices(nullptr), material(0), verticesCount(0), indicesCount(0) {}
+	GLint intersectID;
+	Primitive() :vertices(nullptr), indices(nullptr), material(0), verticesCount(0), indicesCount(0), intersectID(-1) {}
 	~Primitive()
 	{
 		delete[] this->vertices;
@@ -45,11 +68,13 @@ class Mesh
 {
 public:
 	Primitive* primitives;
+	Box *boundingBoxes;
 	GLuint primitivesCount;
-	Mesh() : primitives(nullptr), primitivesCount(0) {}
+	Mesh() : primitives(nullptr), boundingBoxes(nullptr), primitivesCount(0) {}
 	~Mesh()
 	{
 		delete[] primitives;
+		delete[] boundingBoxes;
 	}
 
 };
@@ -58,16 +83,19 @@ struct Node
 {
 	glm::vec3 translation;
 	glm::vec3 scale;
+	glm::mat4 model;
 	GLuint *children;
 	GLuint childrenCount;
 	GLboolean isRoot;
 	GLuint parent;
 	GLuint mesh;
 	GLboolean hasMesh;
+	Box boundingBox;
 	Node() : children(nullptr), childrenCount(0), isRoot(GL_TRUE), hasMesh(GL_FALSE) {}
 	~Node()
 	{
-		delete[] children;
+		if(nullptr != children)
+			delete[] children;
 	}
 };
 
@@ -103,8 +131,12 @@ public:
 	}
 	void draw(GLuint sceneIndex, Shader *shader);
 
+	void setup();
+
 private:
 	void drawNode(GLuint index, glm::mat4 parentM, Shader *shader);
+
+	Box calculateBoundingBox(GLuint index, glm::mat4 parentModel);
 };
 
 struct Buffer

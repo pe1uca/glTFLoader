@@ -1,6 +1,7 @@
 #include "Engine.h"
 
 #include <iostream>
+#include <map>
 
 Engine::Engine()
 {
@@ -85,9 +86,11 @@ GLboolean Engine::initiWindow()
 	{
 		((Engine*)(glfwGetWindowUserPointer(window)))->scroll_callback(window, xoffset, yoffset);
 	});
+	glfwSetInputMode(this->mWindow, GLFW_STICKY_MOUSE_BUTTONS, GLFW_PRESS);
 
 	// tell GLFW to capture our mouse
-	glfwSetInputMode(this->mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(this->mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	return GL_TRUE;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -96,27 +99,54 @@ void Engine::framebuffer_size_callback(GLFWwindow* window, int width, int height
 {
 	// make sure the viewport matches the new window dimensions; note that width and 
 	// height will be significantly larger than specified on retina displays.
-	//glViewport(0, 0, width, height);
+	glViewport(0, 0, width, height);
+	this->SCR_WIDTH = width;
+	this->SCR_HEIGHT = height;
+	this->aspectRatio = (GLfloat)width / (GLfloat)height;
 }
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
 void Engine::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	if (firstMouse)
+	if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
 	{
-	lastX = xpos;
-	lastY = ypos;
-	firstMouse = false;
+		if (firstMouse)
+		{
+			lastX = xpos;
+			lastY = ypos;
+			firstMouse = false;
+		}
+
+		float xoffset = xpos - lastX;
+		float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+		lastX = xpos;
+		lastY = ypos;
+
+		mCamera->ProcessMouseRotation(xoffset, yoffset);
 	}
+	else if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+	{
+		if (firstMouse)
+		{
+			lastX = xpos;
+			lastY = ypos;
+			firstMouse = false;
+		}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+		float xoffset = xpos - lastX;
+		float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+		lastX = xpos;
+		lastY = ypos;
 
-	mCamera->ProcessMouseMovement(xoffset, yoffset);
+		mCamera->ProcessMouseMovement(xoffset, yoffset);
+	}
+	else
+	{
+		firstMouse = true;
+	}
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
@@ -157,6 +187,20 @@ GLboolean Engine::keyPressed(int key)
 	return false;
 }
 
+GLboolean Engine::mouseButtonPressed(int button)
+{
+	if (GLFW_PRESS == glfwGetMouseButton(this->mWindow, button) && GLFW_RELEASE == mousePrevState[button])
+	{
+		mousePrevState[button] = GLFW_PRESS;
+		return true;
+	}
+	else if (GLFW_RELEASE == glfwGetMouseButton(this->mWindow, button))
+	{
+		mousePrevState[button] = GLFW_RELEASE;
+	}
+	return false;
+}
+
 GLboolean Engine::keyDown(int key)
 {
 	return GLFW_PRESS == glfwGetKey(this->mWindow, key);
@@ -183,4 +227,43 @@ void Engine::render()
 {
 	glfwSwapBuffers(this->mWindow);
 	glfwPollEvents();
+}
+
+GLint Engine::registerBoundingBox(Box box)
+{
+	objectsToColide.push_back(box);
+	return objectsToColide.size() - 1;
+}
+
+GLint Engine::CheckCollision(Ray ray)
+{
+	std::map<float, GLint> sorted;
+
+	for (GLint i = 0; i < objectsToColide.size(); i++)
+	{
+		GLfloat distance = glm::length(this->mCamera->Position - ((objectsToColide[i].min + objectsToColide[i].max) / 2.0f));
+		sorted[distance] = i;
+	}
+
+	glm::vec3 inverseDir;
+	inverseDir.x = ray.direction.x == 0.0f ? 1.0 / 0.00001f : 1.0 / ray.direction.x;
+	inverseDir.y = ray.direction.y == 0.0f ? 1.0 / 0.00001f : 1.0 / ray.direction.y;
+	inverseDir.z = ray.direction.z == 0.0f ? 1.0 / 0.00001f : 1.0 / ray.direction.z;
+
+	GLfloat slope_yx = ray.origin.x * inverseDir.y;
+	GLfloat slope_xy = ray.origin.y * inverseDir.x;
+	GLfloat slope_zy = ray.origin.y * inverseDir.z;
+	GLfloat slope_yz = ray.origin.z * inverseDir.y;
+	GLfloat slope_xz = ray.origin.x * inverseDir.z;
+	GLfloat slope_zx = ray.origin.z * inverseDir.x;
+
+
+	for (std::map<float, GLint>::iterator it = sorted.begin(); it != sorted.end(); ++it)
+	{
+		Box test = objectsToColide[it->second];
+
+
+	}
+
+	return -1;
 }

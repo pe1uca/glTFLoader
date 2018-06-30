@@ -66,8 +66,8 @@ void glTFFile::drawNode(GLuint index, glm::mat4 parentM, Shader *shader)
 {
 	Node *node = &this->nodes[index];
 	glm::mat4 model;
-	model = glm::scale(model, node->scale);
 	model = glm::translate(model, node->translation);
+	model = glm::scale(model, node->scale);
 	model = parentM * model;
 
 	if (node->hasMesh)
@@ -96,4 +96,62 @@ void glTFFile::drawNode(GLuint index, glm::mat4 parentM, Shader *shader)
 			this->drawNode(nodeIndex, model, shader);
 		}
 	}
+}
+
+void glTFFile::setup()
+{
+
+	for (GLint i = 0; i < this->nodesCount; i++)
+	{
+		if (!this->nodes[i].isRoot)
+			continue;
+		Node *node = &this->nodes[i];
+		glm::mat4 model;
+		model = glm::translate(model, node->translation);
+		model = glm::scale(model, node->scale);
+		model = model;
+
+		node->boundingBox = calculateBoundingBox(i, glm::mat4());
+	}
+}
+
+Box glTFFile::calculateBoundingBox(GLuint index, glm::mat4 parentModel)
+{
+	Box result;
+	Node *node = &this->nodes[index];
+	glm::mat4 model;
+	model = glm::translate(model, node->translation);
+	model = glm::scale(model, node->scale);
+	model = parentModel * model;
+	if (nullptr != node->children)
+	{
+		for (GLint i = 0; i < node->childrenCount; i++)
+		{
+			Box child = calculateBoundingBox(node->children[i], model);
+			result.max.x = child.max.x > result.max.x ? child.max.x : result.max.x;
+			result.max.y = child.max.y > result.max.y ? child.max.y : result.max.y;
+			result.max.z = child.max.z > result.max.z ? child.max.z : result.max.z;
+
+			result.min.x = child.min.x < result.min.x ? child.min.x : result.min.x;
+			result.min.y = child.min.y < result.min.y ? child.min.y : result.min.y;
+			result.min.z = child.min.z < result.min.z ? child.min.z : result.min.z;
+		}
+	}
+	if (node->hasMesh)
+	{
+		Box child = node->boundingBox;
+
+		child.max = model * glm::vec4(child.max, 1.0);
+		child.min = model * glm::vec4(child.min, 1.0);
+
+		result.max.x = child.max.x > result.max.x ? child.max.x : result.max.x;
+		result.max.y = child.max.y > result.max.y ? child.max.y : result.max.y;
+		result.max.z = child.max.z > result.max.z ? child.max.z : result.max.z;
+
+		result.min.x = child.min.x < result.min.x ? child.min.x : result.min.x;
+		result.min.y = child.min.y < result.min.y ? child.min.y : result.min.y;
+		result.min.z = child.min.z < result.min.z ? child.min.z : result.min.z;
+		node->boundingBox = child;
+	}
+	return result;
 }

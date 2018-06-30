@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <limits>
 
 #include <rapidjson\document.h>
 #include <rapidjson\error\en.h>
@@ -132,12 +133,42 @@ glTFFile* Loader::LoadFile(const char *filePath)
 		GLuint componentCount = this->GetComponentCount(accessors[i].type);
 		GLuint componentSize = this->GetComponentSize(accessors[i].componentType);
 		accessors[i].size = componentCount * componentSize;
-		/*accessors[i].min = new GLchar[accessors[i].size];
+		accessors[i].min = new GLchar[accessors[i].size];
 		accessors[i].max = new GLchar[accessors[i].size];
 		for (int j = 0; j < componentCount; j++)
 		{
-			accessors[i].min[j * componentSize] = 
-		}*/
+			GLboolean hasMin = value[i].HasMember("min");
+			GLboolean hasMax = value[i].HasMember("max");
+			rapidjson::Type tmp;
+			switch (accessors[i].componentType)
+			{
+			case GL_BYTE:
+				((GLbyte*)accessors[i].min)[j] = hasMin ? (GLbyte)value[i]["min"][j].GetFloat() : 0;
+				((GLbyte*)accessors[i].max)[j] = hasMax ? (GLbyte)value[i]["max"][j].GetFloat() : 0;
+				break;
+			case GL_UNSIGNED_BYTE:
+				((GLubyte*)accessors[i].min)[j] = hasMin ? (GLubyte)value[i]["min"][j].GetFloat() : 0;
+				((GLubyte*)accessors[i].max)[j] = hasMax ? (GLubyte)value[i]["max"][j].GetFloat() : 0;
+				break;
+			case GL_SHORT:
+				((GLshort*)accessors[i].min)[j] = hasMin ? (GLshort)value[i]["min"][j].GetFloat() : 0;
+				((GLshort*)accessors[i].max)[j] = hasMax ? (GLshort)value[i]["max"][j].GetFloat() : 0;
+				break;
+			case GL_UNSIGNED_SHORT:
+				tmp = value[i]["min"][j].GetType();
+				((GLushort*)accessors[i].min)[j] = hasMin ? (GLushort)value[i]["min"][j].GetFloat() : 0;
+				((GLushort*)accessors[i].max)[j] = hasMax ? (GLushort)value[i]["max"][j].GetFloat() : 0;
+				break;
+			case GL_UNSIGNED_INT:
+				((GLuint*)accessors[i].min)[j] = hasMin ? (GLuint)value[i]["min"][j].GetFloat() : 0;
+				((GLuint*)accessors[i].max)[j] = hasMax ? (GLuint)value[i]["max"][j].GetFloat() : 0;
+				break;
+			case GL_FLOAT:
+				((GLfloat*)accessors[i].min)[j] = hasMin ? (GLfloat)value[i]["min"][j].GetFloat() : 0.0f;
+				((GLfloat*)accessors[i].max)[j] = hasMax ? (GLfloat)value[i]["max"][j].GetFloat() : 0.0f;
+				break;
+			}
+		}
 	}
 
 	value = json["materials"];
@@ -173,6 +204,7 @@ glTFFile* Loader::LoadFile(const char *filePath)
 		rapidjson::Value& primitives = value[i]["primitives"];
 		meshes[i].primitivesCount = primitives.Size();
 		meshes[i].primitives = new Primitive[meshes[i].primitivesCount];
+		meshes[i].boundingBoxes = new Box[meshes[i].primitivesCount];
 		for (GLuint j = 0; j < meshes[i].primitivesCount; j++)
 		{
 			if (!primitives[j].HasMember("attributes"))
@@ -192,7 +224,6 @@ glTFFile* Loader::LoadFile(const char *filePath)
 			GLuint texCoords0 = attributes["TEXCOORD_0"].GetUint();
 			GLuint indicesAccess = primitives[j]["indices"].GetUint();
 
-			//Primitive* primitive = &meshes[i].primitives[j];
 			GLuint material = primitives[j]["material"].GetUint();
 			GLuint indicesCount = accessors[indicesAccess].count;
 			GLuint verticesCount = accessors[positions].count;
@@ -254,6 +285,13 @@ glTFFile* Loader::LoadFile(const char *filePath)
 				vertices[k].texCoord0.y = endian.littleFloat(*(GLfloat*)&bufferPos->data[viewTan->offset + (accessors[texCoords0].size * k) + dataStride]);
 			}
 
+			Box *boundingBox = &meshes[i].boundingBoxes[j];
+			boundingBox->max.x = ((GLfloat*)accessors[positions].max)[0];
+			boundingBox->max.y = ((GLfloat*)accessors[positions].max)[1];
+			boundingBox->max.z = ((GLfloat*)accessors[positions].max)[2];
+			boundingBox->min.x = ((GLfloat*)accessors[positions].min)[0];
+			boundingBox->min.y = ((GLfloat*)accessors[positions].min)[1];
+			boundingBox->min.z = ((GLfloat*)accessors[positions].min)[2];
 			meshes[i].primitives[j].setup(vertices, verticesCount, indices, indicesCount, material);
 		}
 	}
@@ -267,10 +305,25 @@ glTFFile* Loader::LoadFile(const char *filePath)
 	for (GLuint i = 0; i < result->nodesCount; i++)
 	{
 		Node* node = &nodes[i];
+		Box boundingBox;
+		boundingBox.max = glm::vec3(-std::numeric_limits<GLfloat>::max());
+		boundingBox.min = glm::vec3(std::numeric_limits<GLfloat>::max());
 		if (value[i].HasMember("mesh"))
 		{
 			node->mesh = value[i]["mesh"].GetUint();
 			node->hasMesh = GL_TRUE;
+			Mesh *mesh = &meshes[node->mesh];
+			for (GLint i = 0; i < mesh->primitivesCount; i++)
+			{
+				Box tmpBox = mesh->boundingBoxes[i];
+				boundingBox.max.x = tmpBox.max.x > boundingBox.max.x ? tmpBox.max.x : boundingBox.max.x;
+				boundingBox.max.y = tmpBox.max.y > boundingBox.max.y ? tmpBox.max.y : boundingBox.max.y;
+				boundingBox.max.z = tmpBox.max.z > boundingBox.max.z ? tmpBox.max.z : boundingBox.max.z;
+
+				boundingBox.min.x = tmpBox.min.x < boundingBox.min.x ? tmpBox.min.x : boundingBox.min.x;
+				boundingBox.min.y = tmpBox.min.y < boundingBox.min.y ? tmpBox.min.y : boundingBox.min.y;
+				boundingBox.min.z = tmpBox.min.z < boundingBox.min.z ? tmpBox.min.z : boundingBox.min.z;
+			}
 		}
 		if (value[i].HasMember("children") && value[i]["children"].IsArray() && !value[i]["children"].Empty())
 		{
@@ -279,12 +332,13 @@ glTFFile* Loader::LoadFile(const char *filePath)
 			for (GLuint j = 0; j < node->childrenCount; j++)
 			{
 				node->children[j] = value[i]["children"][j].GetUint();
-				nodes[j].parent = i;
-				nodes[j].isRoot = GL_FALSE;
+				nodes[node->children[j]].parent = i;
+				nodes[node->children[j]].isRoot = GL_FALSE;
 			}
 		}
 		node->translation = glm::vec3(0.0);
 		node->scale = glm::vec3(1.0);
+		node->boundingBox = boundingBox;
 		if (value[i].HasMember("translation") && value[i]["translation"].IsArray() && !value[i]["translation"].Empty())
 		{
 			node->translation.x = value[i]["translation"][0].GetFloat();
@@ -316,6 +370,7 @@ glTFFile* Loader::LoadFile(const char *filePath)
 		}
 	}
 
+	result->setup();
 
 	delete[] buffers;
 	delete[] views;
