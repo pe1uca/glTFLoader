@@ -241,28 +241,18 @@ GLint Engine::CheckCollision(Ray ray)
 
 	for (GLint i = 0; i < objectsToColide.size(); i++)
 	{
-		GLfloat distance = glm::length(this->mCamera->Position - ((objectsToColide[i].min + objectsToColide[i].max) / 2.0f));
+		GLfloat distance = glm::length(this->mCamera->Position - ((objectsToColide[i].bounds[0] + objectsToColide[i].bounds[1]) / 2.0f));
 		sorted[distance] = i;
 	}
-
-	glm::vec3 inverseDir;
-	inverseDir.x = ray.direction.x == 0.0f ? 1.0 / 0.00001f : 1.0 / ray.direction.x;
-	inverseDir.y = ray.direction.y == 0.0f ? 1.0 / 0.00001f : 1.0 / ray.direction.y;
-	inverseDir.z = ray.direction.z == 0.0f ? 1.0 / 0.00001f : 1.0 / ray.direction.z;
-
-	GLfloat slope_yx = ray.origin.x * inverseDir.y;
-	GLfloat slope_xy = ray.origin.y * inverseDir.x;
-	GLfloat slope_zy = ray.origin.y * inverseDir.z;
-	GLfloat slope_yz = ray.origin.z * inverseDir.y;
-	GLfloat slope_xz = ray.origin.x * inverseDir.z;
-	GLfloat slope_zx = ray.origin.z * inverseDir.x;
-
 
 	for (std::map<float, GLint>::iterator it = sorted.begin(); it != sorted.end(); ++it)
 	{
 		Box test = objectsToColide[it->second];
-
-
+		GLboolean collision = test.interect(ray);
+		if (collision)
+		{
+			return it->second;
+		}
 	}
 
 	return -1;

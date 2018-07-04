@@ -128,29 +128,29 @@ Box glTFFile::calculateBoundingBox(GLuint index, glm::mat4 parentModel)
 		for (GLint i = 0; i < node->childrenCount; i++)
 		{
 			Box child = calculateBoundingBox(node->children[i], model);
-			result.max.x = child.max.x > result.max.x ? child.max.x : result.max.x;
-			result.max.y = child.max.y > result.max.y ? child.max.y : result.max.y;
-			result.max.z = child.max.z > result.max.z ? child.max.z : result.max.z;
+			result.bounds[1].x = child.bounds[1].x > result.bounds[1].x ? child.bounds[1].x : result.bounds[1].x;
+			result.bounds[1].y = child.bounds[1].y > result.bounds[1].y ? child.bounds[1].y : result.bounds[1].y;
+			result.bounds[1].z = child.bounds[1].z > result.bounds[1].z ? child.bounds[1].z : result.bounds[1].z;
 
-			result.min.x = child.min.x < result.min.x ? child.min.x : result.min.x;
-			result.min.y = child.min.y < result.min.y ? child.min.y : result.min.y;
-			result.min.z = child.min.z < result.min.z ? child.min.z : result.min.z;
+			result.bounds[0].x = child.bounds[0].x < result.bounds[0].x ? child.bounds[0].x : result.bounds[0].x;
+			result.bounds[0].y = child.bounds[0].y < result.bounds[0].y ? child.bounds[0].y : result.bounds[0].y;
+			result.bounds[0].z = child.bounds[0].z < result.bounds[0].z ? child.bounds[0].z : result.bounds[0].z;
 		}
 	}
 	if (node->hasMesh)
 	{
 		Box child = node->boundingBox;
 
-		child.max = model * glm::vec4(child.max, 1.0);
-		child.min = model * glm::vec4(child.min, 1.0);
+		child.bounds[1] = model * glm::vec4(child.bounds[1], 1.0);
+		child.bounds[0] = model * glm::vec4(child.bounds[0], 1.0);
 
-		result.max.x = child.max.x > result.max.x ? child.max.x : result.max.x;
-		result.max.y = child.max.y > result.max.y ? child.max.y : result.max.y;
-		result.max.z = child.max.z > result.max.z ? child.max.z : result.max.z;
+		result.bounds[1].x = child.bounds[1].x > result.bounds[1].x ? child.bounds[1].x : result.bounds[1].x;
+		result.bounds[1].y = child.bounds[1].y > result.bounds[1].y ? child.bounds[1].y : result.bounds[1].y;
+		result.bounds[1].z = child.bounds[1].z > result.bounds[1].z ? child.bounds[1].z : result.bounds[1].z;
 
-		result.min.x = child.min.x < result.min.x ? child.min.x : result.min.x;
-		result.min.y = child.min.y < result.min.y ? child.min.y : result.min.y;
-		result.min.z = child.min.z < result.min.z ? child.min.z : result.min.z;
+		result.bounds[0].x = child.bounds[0].x < result.bounds[0].x ? child.bounds[0].x : result.bounds[0].x;
+		result.bounds[0].y = child.bounds[0].y < result.bounds[0].y ? child.bounds[0].y : result.bounds[0].y;
+		result.bounds[0].z = child.bounds[0].z < result.bounds[0].z ? child.bounds[0].z : result.bounds[0].z;
 		node->boundingBox = child;
 	}
 	return result;

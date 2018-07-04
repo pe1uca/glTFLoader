@@ -286,12 +286,12 @@ glTFFile* Loader::LoadFile(const char *filePath)
 			}
 
 			Box *boundingBox = &meshes[i].boundingBoxes[j];
-			boundingBox->max.x = ((GLfloat*)accessors[positions].max)[0];
-			boundingBox->max.y = ((GLfloat*)accessors[positions].max)[1];
-			boundingBox->max.z = ((GLfloat*)accessors[positions].max)[2];
-			boundingBox->min.x = ((GLfloat*)accessors[positions].min)[0];
-			boundingBox->min.y = ((GLfloat*)accessors[positions].min)[1];
-			boundingBox->min.z = ((GLfloat*)accessors[positions].min)[2];
+			boundingBox->bounds[1].x = ((GLfloat*)accessors[positions].max)[0];
+			boundingBox->bounds[1].y = ((GLfloat*)accessors[positions].max)[1];
+			boundingBox->bounds[1].z = ((GLfloat*)accessors[positions].max)[2];
+			boundingBox->bounds[0].x = ((GLfloat*)accessors[positions].min)[0];
+			boundingBox->bounds[0].y = ((GLfloat*)accessors[positions].min)[1];
+			boundingBox->bounds[0].z = ((GLfloat*)accessors[positions].min)[2];
 			meshes[i].primitives[j].setup(vertices, verticesCount, indices, indicesCount, material);
 		}
 	}
@@ -306,8 +306,8 @@ glTFFile* Loader::LoadFile(const char *filePath)
 	{
 		Node* node = &nodes[i];
 		Box boundingBox;
-		boundingBox.max = glm::vec3(-std::numeric_limits<GLfloat>::max());
-		boundingBox.min = glm::vec3(std::numeric_limits<GLfloat>::max());
+		boundingBox.bounds[1] = glm::vec3(-std::numeric_limits<GLfloat>::max());
+		boundingBox.bounds[0] = glm::vec3(std::numeric_limits<GLfloat>::max());
 		if (value[i].HasMember("mesh"))
 		{
 			node->mesh = value[i]["mesh"].GetUint();
@@ -316,13 +316,13 @@ glTFFile* Loader::LoadFile(const char *filePath)
 			for (GLint i = 0; i < mesh->primitivesCount; i++)
 			{
 				Box tmpBox = mesh->boundingBoxes[i];
-				boundingBox.max.x = tmpBox.max.x > boundingBox.max.x ? tmpBox.max.x : boundingBox.max.x;
-				boundingBox.max.y = tmpBox.max.y > boundingBox.max.y ? tmpBox.max.y : boundingBox.max.y;
-				boundingBox.max.z = tmpBox.max.z > boundingBox.max.z ? tmpBox.max.z : boundingBox.max.z;
+				boundingBox.bounds[1].x = tmpBox.bounds[1].x > boundingBox.bounds[1].x ? tmpBox.bounds[1].x : boundingBox.bounds[1].x;
+				boundingBox.bounds[1].y = tmpBox.bounds[1].y > boundingBox.bounds[1].y ? tmpBox.bounds[1].y : boundingBox.bounds[1].y;
+				boundingBox.bounds[1].z = tmpBox.bounds[1].z > boundingBox.bounds[1].z ? tmpBox.bounds[1].z : boundingBox.bounds[1].z;
 
-				boundingBox.min.x = tmpBox.min.x < boundingBox.min.x ? tmpBox.min.x : boundingBox.min.x;
-				boundingBox.min.y = tmpBox.min.y < boundingBox.min.y ? tmpBox.min.y : boundingBox.min.y;
-				boundingBox.min.z = tmpBox.min.z < boundingBox.min.z ? tmpBox.min.z : boundingBox.min.z;
+				boundingBox.bounds[0].x = tmpBox.bounds[0].x < boundingBox.bounds[0].x ? tmpBox.bounds[0].x : boundingBox.bounds[0].x;
+				boundingBox.bounds[0].y = tmpBox.bounds[0].y < boundingBox.bounds[0].y ? tmpBox.bounds[0].y : boundingBox.bounds[0].y;
+				boundingBox.bounds[0].z = tmpBox.bounds[0].z < boundingBox.bounds[0].z ? tmpBox.bounds[0].z : boundingBox.bounds[0].z;
 			}
 		}
 		if (value[i].HasMember("children") && value[i]["children"].IsArray() && !value[i]["children"].Empty())

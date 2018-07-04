@@ -6,6 +6,8 @@
 #include <limits>
 
 #include "Shader.h"
+#include "Ray.h"
+#include "Box.h"
 
 struct Vertex
 {
@@ -22,24 +24,10 @@ struct Material
 	GLfloat metallic;
 };
 
-struct Box
-{
-	glm::vec3 min;
-	glm::vec3 max;
-	Box() : min(std::numeric_limits<GLfloat>::max()), max(-std::numeric_limits<GLfloat>::max()) {}
-	~Box() {}
-};
-
 struct Line
 {
 	glm::vec3 start;
 	glm::vec3 end;
-};
-
-struct Ray
-{
-	glm::vec3 origin;
-	glm::vec3 direction;
 };
 
 class Primitive

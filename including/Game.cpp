@@ -197,24 +197,22 @@ Ray Game::CastRay(GLfloat x, GLfloat y)
 {
 	Line line;
 
-	GLfloat tanV = glm::tan(this->mEngine->GetCamera()->Zoom * 0.5f);
+	x = (2.0f * x) / this->mEngine->GetWindowWidth() - 1.0f;
+	y = 1.0f - (2.0f * y) / this->mEngine->GetWindowHeight();
+	float z = 1.0f;
 
-	GLfloat dx = tanV * (x / (this->mEngine->GetWindowWidth() / 2) - 1.0f) / this->mEngine->GetAspectRatio();
-	GLfloat dy = tanV * (1.0f - y / (this->mEngine->GetWindowHeight() / 2));
-	GLfloat nearPlane = this->mEngine->GetNearPlane();
-	GLfloat farPlane = this->mEngine->GetFarPlane();
+	line.start = glm::vec3(x, y, -1.0f);
+	line.end = glm::vec3(x, y, 1.0f);
+	glm::vec4 ray_origin(x, y, -1.0f, 1.0f);
+	glm::vec4 ray_end(x, y, 1.0f, 1.0f);
+	glm::mat4 worldClipMat = this->projection * this->view;
+	glm::mat4 clipWorldMat = glm::inverse(worldClipMat);
+	glm::vec4 pointNear4 = clipWorldMat * ray_origin;
+	glm::vec4 pointFar4 = clipWorldMat * ray_end;
+	line.start = glm::vec3(pointNear4) / pointNear4.w;
+	line.end = glm::vec3(pointFar4) / pointFar4.w;
 
-	line.start = glm::vec3(dx * nearPlane, dy * nearPlane, nearPlane);
-	line.end = glm::vec3(dx * farPlane, dy * farPlane, farPlane);
-	
-	glm::mat4 inverseView = glm::inverse(this->view);
-
-	line.start = inverseView * glm::vec4(line.start, 1.0);
-	line.end = inverseView * glm::vec4(line.end, 1.0);
-
-	Ray result;
-	result.origin = line.start;
-	result.direction = line.end - line.start;
+	Ray result(line.start, line.end - line.start);
 
 	return result;
 }
