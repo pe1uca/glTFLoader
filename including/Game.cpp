@@ -118,8 +118,14 @@ GLboolean Game::init()
 
 void Game::run()
 {
+	double previous = glfwGetTime();
+	double lag = 0.0;
 	while (!this->mEngine->GetShouldClose())
 	{
+		double current = glfwGetTime();
+		double elapsed = current - previous;
+		previous = current;
+		lag += elapsed;
 		this->currentFrame = glfwGetTime();
 		this->deltaTime = this->currentFrame - this->lastFrame;
 		this->lastFrame = this->currentFrame;
@@ -199,14 +205,10 @@ Ray Game::CastRay(GLfloat x, GLfloat y)
 
 	x = (2.0f * x) / this->mEngine->GetWindowWidth() - 1.0f;
 	y = 1.0f - (2.0f * y) / this->mEngine->GetWindowHeight();
-	float z = 1.0f;
 
-	line.start = glm::vec3(x, y, -1.0f);
-	line.end = glm::vec3(x, y, 1.0f);
 	glm::vec4 ray_origin(x, y, -1.0f, 1.0f);
 	glm::vec4 ray_end(x, y, 1.0f, 1.0f);
-	glm::mat4 worldClipMat = this->projection * this->view;
-	glm::mat4 clipWorldMat = glm::inverse(worldClipMat);
+	glm::mat4 clipWorldMat = glm::inverse(this->projection * this->view);
 	glm::vec4 pointNear4 = clipWorldMat * ray_origin;
 	glm::vec4 pointFar4 = clipWorldMat * ray_end;
 	line.start = glm::vec3(pointNear4) / pointNear4.w;
