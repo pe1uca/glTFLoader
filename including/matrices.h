@@ -136,5 +136,40 @@ mat2 Inverse(const mat2& mat);
 mat3 Inverse(const mat3& mat);
 mat4 Inverse(const mat4& mat);
 
+mat4 Translation(float x, float y, float z);
+mat4 Translation(const vec3& pos);
+vec3 GetTranslation(const mat4& mat);
+
+mat4 Scale(float x, float y, float z);
+mat4 Scale(const vec3& vec);
+vec3 GetScale(const mat4& mat);
+
+mat4 Rotation(float pitch, float yaw, float roll);
+mat3 Rotation3x3(float pitch, float yaw, float roll);
+
+mat4 ZRotation(float angle);
+mat3 ZRotation3x3(float angle);
+
+mat4 XRotation(float angle);
+mat3 XRotation3x3(float angle);
+
+mat4 YRotation(float angle);
+mat3 YRotation3x3(float angle);
+
+mat4 AxisAngle(const vec3& axis, float angle);
+mat3 AxisAngle3x3(const vec3& axis, float angle);
+
+vec3 MultiplyPoint(const vec3& vec, const mat4& mat);
+vec3 MultiplyVector(const vec3& vec, const mat4& mat);
+vec3 MultiplyVector(const vec3& vec, const mat3& mat);
+
+mat4 Transform(const vec3& scale, const vec3& eulerRotation, const vec3& translate);
+mat4 Transform(const vec3& scale, const vec3& rotationAxis, float rotationAngle, const vec3& translate);
+
+mat4 LookAt(const vec3& position, const vec3& target, const vec3& up);
+
+mat4 Projection(float fov, float aspect, float zNear, float zFar);
+mat4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
+
 
 #endif // !_MATH_MATRICES_H_
