@@ -45,7 +45,7 @@ public:
 		delete[] this->vertices;
 		delete[] this->indices;
 	}
-	void setup(Vertex *vertices, GLuint verticesCount, GLuint *indices, GLuint indicesCount, GLuint material);
+	void setup(Vertex *_vertices, GLuint _verticesCount, GLuint *_indices, GLuint _indicesCount, GLuint _material);
 
 	void draw();
 private:

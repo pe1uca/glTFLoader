@@ -53,9 +53,9 @@ public:
 	Ray(glm::vec3 origin, glm::vec3 direction) {
 		this->origin = origin;
 		this->direction = glm::normalize(direction);
-		inverseDir.x = 1.0 / direction.x;
-		inverseDir.y = 1.0 / direction.y;
-		inverseDir.z = 1.0 / direction.z;
+		inverseDir.x = 1.0f / direction.x;
+		inverseDir.y = 1.0f / direction.y;
+		inverseDir.z = 1.0f / direction.z;
 
 		type = GetType();
 

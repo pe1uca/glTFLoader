@@ -6,7 +6,7 @@
 
 #include <glad\glad.h>
 #include <GLFW\glfw3.h>
-
+/*World*/
 class Game
 {
 public:
@@ -25,7 +25,6 @@ private:
 	GLdouble currentFrame = 0.0f;
 
 	Engine::EXIT_CODE mExitValue;
-	Engine* mEngine;
 
 	glm::mat4 projection;
 	glm::mat4 view;

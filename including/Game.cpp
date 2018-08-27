@@ -47,13 +47,14 @@ Engine::EXIT_CODE Game::GetExitValue() { return this->mExitValue; }
 
 GLboolean Game::init()
 {
-	this->mEngine = new Engine();
-	if (!this->mEngine->init())
+	/*this->mEngine = new Engine();
+	if (this->mEngine->init(NULL))
 	{
 		this->mExitValue = Engine::FAILURE;
 		return GL_FALSE;
-	}
-	this->bamboo = this->mEngine->mLoader->LoadFile("D:\\etc\\naturekit\\Models\\glTF format\\palmDetailed_large.gltf");
+	}*/
+	Engine::StartModule(NULL);
+	this->bamboo = Engine::GetInstance().mLoader->LoadFile("resources\\models\\bamboo.gltf");
 	/*struct dirent **dirp;
 	modelsCount = scandir("D:\\etc\\naturekit\\Models\\glTF format\\", &dirp, [](const struct dirent *dir) 
 	{
@@ -82,7 +83,7 @@ GLboolean Game::init()
 	//this->bamboo = this->mEngine->mLoader->LoadFile("resources\\models\\bamboo.gltf");
 	for (GLint i = 0; i < this->bamboo->nodesCount; i++)
 	{
-		this->mEngine->registerBoundingBox(this->bamboo->nodes[i].boundingBox);
+		Engine::GetInstance().registerBoundingBox(this->bamboo->nodes[i].boundingBox);
 	}
 	basicShader = new Shader("resources/shaders/shader.vs", "resources/shaders/shader.fs");
 	simpleShader = new Shader("resources/shaders/simple.vs", "resources/shaders/simple.fs");
@@ -109,7 +110,7 @@ GLboolean Game::init()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glBindVertexArray(0);
 	
-	projection = glm::perspective(glm::radians(this->mEngine->GetCamera()->Zoom), this->mEngine->GetAspectRatio(), this->mEngine->GetNearPlane(), this->mEngine->GetFarPlane());
+	projection = glm::perspective(glm::radians(Engine::GetInstance().GetCamera()->Zoom), Engine::GetInstance().GetAspectRatio(), Engine::GetInstance().GetNearPlane(), Engine::GetInstance().GetFarPlane());
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -120,7 +121,7 @@ void Game::run()
 {
 	double previous = glfwGetTime();
 	double lag = 0.0;
-	while (!this->mEngine->GetShouldClose())
+	while (!Engine::GetInstance().GetShouldClose())
 	{
 		double current = glfwGetTime();
 		double elapsed = current - previous;
@@ -140,9 +141,9 @@ void Game::run()
 
 void Game::update()
 {
-	this->mEngine->update(this->deltaTime);
-	projection = glm::perspective(glm::radians(this->mEngine->GetCamera()->Zoom), this->mEngine->GetAspectRatio(), this->mEngine->GetNearPlane(), this->mEngine->GetFarPlane());
-	view = this->mEngine->GetCamera()->GetViewMatrix();
+	Engine::GetInstance().update(this->deltaTime);
+	projection = glm::perspective(glm::radians(Engine::GetInstance().GetCamera()->Zoom), Engine::GetInstance().GetAspectRatio(), Engine::GetInstance().GetNearPlane(), Engine::GetInstance().GetFarPlane());
+	view = Engine::GetInstance().GetCamera()->GetViewMatrix();
 }
 
 void Game::render()
@@ -157,7 +158,7 @@ void Game::render()
 	pbrShader->use();
 	pbrShader->setMat4("projection", this->projection);
 	pbrShader->setMat4("view", this->view);
-	pbrShader->setVec3("camPos", this->mEngine->GetCamera()->Position);
+	pbrShader->setVec3("camPos", Engine::GetInstance().GetCamera()->Position);
 	this->bamboo->draw(0, pbrShader);
 	for (GLuint i = 0; i < modelsCount; i++)
 	{
@@ -170,7 +171,7 @@ void Game::render()
 	basicShader->setVec4("baseColor", glm::vec4(1.0f));
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	this->mEngine->render();
+	Engine::GetInstance().render();
 }
 
 void Game::release()
@@ -179,21 +180,21 @@ void Game::release()
 	delete this->basicShader;
 	delete this->bamboo;
 	//delete this->models;
-	this->mEngine->release();
+	Engine::CloseModule();
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void Game::processInput()
 {
-	if (this->mEngine->mouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
+	if (Engine::GetInstance().mouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT))
 	{
 		GLdouble x, y;
-		this->mEngine->GetCursosPos(&x, &y);
+		Engine::GetInstance().GetCursosPos(&x, &y);
 
 		Ray ray = this->CastRay(x, y);
 
-		GLint index = this->mEngine->CheckCollision(ray);
+		GLint index = Engine::GetInstance().CheckCollision(ray);
 
 		std::cout << index << std::endl;
 	}
@@ -203,8 +204,8 @@ Ray Game::CastRay(GLfloat x, GLfloat y)
 {
 	Line line;
 
-	x = (2.0f * x) / this->mEngine->GetWindowWidth() - 1.0f;
-	y = 1.0f - (2.0f * y) / this->mEngine->GetWindowHeight();
+	x = (2.0f * x) / Engine::GetInstance().GetWindowWidth() - 1.0f;
+	y = 1.0f - (2.0f * y) / Engine::GetInstance().GetWindowHeight();
 
 	glm::vec4 ray_origin(x, y, -1.0f, 1.0f);
 	glm::vec4 ray_end(x, y, 1.0f, 1.0f);

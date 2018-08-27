@@ -4,8 +4,9 @@
 #include <GLFW\glfw3.h>
 #include <vector>
 #include "Camera.h"
-
-class Engine
+#include "Module.h"
+/*Program*/
+class Engine : public Module<Engine>
 {
 public:
 
@@ -20,7 +21,7 @@ public:
 	Engine();
 	~Engine();
 
-	GLboolean init();
+	ErrorCalls init(void* _init);
 	void release();
 
 	void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -55,8 +56,8 @@ private:
 	GLfloat nearPlane = 0.1f;
 	GLfloat farPlane = 100.0f;
 	GLfloat aspectRatio = (GLfloat)SCR_WIDTH / (GLfloat)SCR_HEIGHT;
-	float lastX = (float)SCR_WIDTH / 2.0;
-	float lastY = (float)SCR_HEIGHT / 2.0;
+	float lastX = (float)SCR_WIDTH / 2.0f;
+	float lastY = (float)SCR_HEIGHT / 2.0f;
 	GLboolean keysPrevState[GLFW_KEY_LAST];
 	GLboolean mousePrevState[GLFW_MOUSE_BUTTON_LAST];
 	bool firstMouse = true;

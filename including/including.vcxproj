@@ -89,7 +89,7 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -167,8 +167,10 @@
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Load.h" />
+    <ClInclude Include="Module.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Tools.h" />
     <ClInclude Include="Types.h" />
   </ItemGroup>
   <ItemGroup>

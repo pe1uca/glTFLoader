@@ -11,11 +11,11 @@ Engine::~Engine()
 {
 }
 
-GLboolean Engine::init()
+ErrorCalls Engine::init(void* /*_init*/)
 {
 	if (!this->initiWindow())
 	{
-		return GL_FALSE;
+		return ErrorCalls::FAILURE;
 	}
 
 	// glad: load all OpenGL function pointers
@@ -23,7 +23,7 @@ GLboolean Engine::init()
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
-		return GL_FALSE;
+		return ErrorCalls::FAILURE;
 	}
 
 	// configure global opengl state
@@ -38,7 +38,7 @@ GLboolean Engine::init()
 	this->mLoader = new Loader();
 	this->mCamera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
-	return GL_TRUE;
+	return ErrorCalls::SUCCESS;
 }
 
 void Engine::release()
@@ -95,7 +95,7 @@ GLboolean Engine::initiWindow()
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void Engine::framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void Engine::framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height)
 {
 	// make sure the viewport matches the new window dimensions; note that width and 
 	// height will be significantly larger than specified on retina displays.
@@ -113,16 +113,16 @@ void Engine::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	{
 		if (firstMouse)
 		{
-			lastX = xpos;
-			lastY = ypos;
+			lastX = (float)xpos;
+			lastY = (float)ypos;
 			firstMouse = false;
 		}
 
-		float xoffset = xpos - lastX;
-		float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+		float xoffset = (float)xpos - lastX;
+		float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 
 		mCamera->ProcessMouseRotation(xoffset, yoffset);
 	}
@@ -130,16 +130,16 @@ void Engine::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	{
 		if (firstMouse)
 		{
-			lastX = xpos;
-			lastY = ypos;
+			lastX = (float)xpos;
+			lastY = (float)ypos;
 			firstMouse = false;
 		}
 
-		float xoffset = xpos - lastX;
-		float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+		float xoffset = (float)xpos - lastX;
+		float yoffset = lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 
 		mCamera->ProcessMouseMovement(xoffset, yoffset);
 	}
@@ -151,9 +151,9 @@ void Engine::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void Engine::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void Engine::scroll_callback(GLFWwindow* /*window*/, double /*xoffset*/, double yoffset)
 {
-	mCamera->ProcessMouseScroll(yoffset);
+	mCamera->ProcessMouseScroll((float)yoffset);
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -208,7 +208,7 @@ GLboolean Engine::keyDown(int key)
 
 GLboolean Engine::GetShouldClose()
 {
-	return glfwWindowShouldClose(this->mWindow);
+	return (GLboolean)glfwWindowShouldClose(this->mWindow);
 }
 void Engine::SetShouldClose(GLboolean value)
 {
@@ -239,7 +239,7 @@ GLint Engine::CheckCollision(Ray ray)
 {
 	std::map<float, GLint> sorted;
 
-	for (GLint i = 0; i < objectsToColide.size(); i++)
+	for (GLuint i = 0; i < objectsToColide.size(); i++)
 	{
 		GLfloat distance = glm::length(this->mCamera->Position - ((objectsToColide[i].bounds[0] + objectsToColide[i].bounds[1]) / 2.0f));
 		sorted[distance] = i;

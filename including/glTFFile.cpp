@@ -2,13 +2,13 @@
 #include <glm\gtc\matrix_transform.hpp>
 #include <iostream>
 
-void Primitive::setup(Vertex *vertices, GLuint verticesCount, GLuint *indices, GLuint indicesCount, GLuint material)
+void Primitive::setup(Vertex *_vertices, GLuint _verticesCount, GLuint *_indices, GLuint _indicesCount, GLuint _material)
 {
-	this->vertices = vertices;
-	this->verticesCount = verticesCount;
-	this->indices = indices;
-	this->indicesCount = indicesCount;
-	this->material = material;
+	this->vertices = _vertices;
+	this->verticesCount = _verticesCount;
+	this->indices = _indices;
+	this->indicesCount = _indicesCount;
+	this->material = _material;
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -101,7 +101,7 @@ void glTFFile::drawNode(GLuint index, glm::mat4 parentM, Shader *shader)
 void glTFFile::setup()
 {
 
-	for (GLint i = 0; i < this->nodesCount; i++)
+	for (GLuint i = 0; i < this->nodesCount; i++)
 	{
 		if (!this->nodes[i].isRoot)
 			continue;
@@ -125,7 +125,7 @@ Box glTFFile::calculateBoundingBox(GLuint index, glm::mat4 parentModel)
 	model = parentModel * model;
 	if (nullptr != node->children)
 	{
-		for (GLint i = 0; i < node->childrenCount; i++)
+		for (GLuint i = 0; i < node->childrenCount; i++)
 		{
 			Box child = calculateBoundingBox(node->children[i], model);
 			result.bounds[1].x = child.bounds[1].x > result.bounds[1].x ? child.bounds[1].x : result.bounds[1].x;
