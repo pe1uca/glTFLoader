@@ -105,11 +105,11 @@ void Normalize(vec3& v)
 	v = v * (1.0f / Magnitude(v));
 }
 
-vec2 Normalized(vec2& v)
+vec2 Normalized(const vec2& v)
 {
 	return v * (1.0f / Magnitude(v));
 }
-vec3 Normalized(vec3& v)
+vec3 Normalized(const vec3& v)
 {
 	return v * (1.0f / Magnitude(v));
 }

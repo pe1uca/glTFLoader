@@ -152,12 +152,15 @@
     <ClCompile Include="Endian.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Geometry2D.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="glTFFile.cpp" />
     <ClCompile Include="Load.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="matrices.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="vectors.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Box.h" />
@@ -166,12 +169,15 @@
     <ClInclude Include="Endian.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Geometry2D.h" />
     <ClInclude Include="Load.h" />
+    <ClInclude Include="matrices.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Tools.h" />
     <ClInclude Include="Types.h" />
+    <ClInclude Include="vectors.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\models\bamboo.bin" />

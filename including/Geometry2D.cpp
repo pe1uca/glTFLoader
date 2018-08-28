@@ -228,12 +228,12 @@ bool RectangleRectangleSAT(const Rectangle2D& rect1, const Rectangle2D& rect2)
 
 Interval2D GetInterval(const OrientedRectangle& rect, const vec2& axis)
 {
-	Rectangle2D r = Rectangle2D(
+	Rectangle2D lr = Rectangle2D(
 		Point2D(rect.position - rect.halfExtents),
 		rect.halfExtents * 2.0f
 	);
-	vec2 min = GetMin(r);
-	vec2 max = GetMax(r);
+	vec2 min = GetMin(lr);
+	vec2 max = GetMax(lr);
 	vec2 verts[] = {
 		min, max,
 		vec2(min.x, max.y), vec2(max.x, min.y)

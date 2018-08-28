@@ -4,6 +4,8 @@
 
 #include "vectors.h"
 
+#pragma warning(push)
+#pragma warning(disable:4201)
 typedef struct mat2 {
 	union {
 		struct {
@@ -96,6 +98,8 @@ typedef struct mat4 {
 		_41 = f41; _42 = f42; _43 = f43; _44 = f44;
 	}
 } mat4;
+
+#pragma warning(pop)
 
 void Transpose(const float *srcMat, float *dstMat, int srcRows, int srcCols);
 mat2 Transpose(const mat2& matrix);

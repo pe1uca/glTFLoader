@@ -4,7 +4,8 @@
 
 #define RAD2DEG(x) ((x) * 57.295754f)
 #define DEG2RAD(x) ((x) * 0.0174533f)
-
+#pragma warning(push)
+#pragma warning(disable:4201)
 typedef struct vec2 {
 	union {
 		struct {
@@ -39,6 +40,8 @@ typedef struct vec3 {
 	vec3() : x(0.0f), y(0.0f), z(0.0f) { }
 	vec3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) { }
 } vec3;
+
+#pragma warning(pop)
 
 
 vec2 operator+(const vec2& l, const vec2& r);

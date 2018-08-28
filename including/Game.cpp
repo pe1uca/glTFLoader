@@ -81,7 +81,7 @@ GLboolean Game::init()
 		}
 	}*/
 	//this->bamboo = this->mEngine->mLoader->LoadFile("resources\\models\\bamboo.gltf");
-	for (GLint i = 0; i < this->bamboo->nodesCount; i++)
+	for (GLuint i = 0; i < this->bamboo->nodesCount; i++)
 	{
 		Engine::GetInstance().registerBoundingBox(this->bamboo->nodes[i].boundingBox);
 	}

@@ -147,7 +147,7 @@ void Cofactor(float* out, const float* minor, int rows, int cols)
 	{
 		for (int j = 0; j < cols; ++j)
 		{
-			out[cols * j + i] = minor[cols * j + i] * powf(-1.0f, i + j);
+			out[cols * j + i] = minor[cols * j + i] * powf(-1.0f, (float)(i + j));
 		}
 	}
 }
@@ -499,7 +499,7 @@ mat4 LookAt(const vec3& position, const vec3& target, const vec3& up)
 		-Dot(right, position),
 		-Dot(newUp, position),
 		-Dot(forward, position), 1.0f
-	)
+	);
 }
 
 mat4 Projection(float fov, float aspect, float zNear, float zFar)

@@ -135,7 +135,7 @@ glTFFile* Loader::LoadFile(const char *filePath)
 		accessors[i].size = componentCount * componentSize;
 		accessors[i].min = new GLchar[accessors[i].size];
 		accessors[i].max = new GLchar[accessors[i].size];
-		for (int j = 0; j < componentCount; j++)
+		for (GLuint j = 0; j < componentCount; j++)
 		{
 			GLboolean hasMin = value[i].HasMember("min");
 			GLboolean hasMax = value[i].HasMember("max");
@@ -271,14 +271,14 @@ glTFFile* Loader::LoadFile(const char *filePath)
 				vertices[k].position.z = endian.littleFloat(*(GLfloat*)&bufferPos->data[viewPos->offset + (accessors[positions].size * k) + (dataStride * 2)]);
 
 				dataStride = this->GetComponentSize(accessors[normals].componentType);
-				vertices[k].normal.x = endian.littleFloat(*(GLfloat*)&bufferPos->data[viewNor->offset + (accessors[normals].size * k)]);
-				vertices[k].normal.y = endian.littleFloat(*(GLfloat*)&bufferPos->data[viewNor->offset + (accessors[normals].size * k) + dataStride]);
-				vertices[k].normal.z = endian.littleFloat(*(GLfloat*)&bufferPos->data[viewNor->offset + (accessors[normals].size * k) + (dataStride * 2)]);
+				vertices[k].normal.x = endian.littleFloat(*(GLfloat*)&bufferNor->data[viewNor->offset + (accessors[normals].size * k)]);
+				vertices[k].normal.y = endian.littleFloat(*(GLfloat*)&bufferNor->data[viewNor->offset + (accessors[normals].size * k) + dataStride]);
+				vertices[k].normal.z = endian.littleFloat(*(GLfloat*)&bufferNor->data[viewNor->offset + (accessors[normals].size * k) + (dataStride * 2)]);
 
 				dataStride = this->GetComponentSize(accessors[normals].componentType);
-				vertices[k].tangent.x = endian.littleFloat(*(GLfloat*)&bufferPos->data[viewTan->offset + (accessors[tangents].size * k)]);
-				vertices[k].tangent.y = endian.littleFloat(*(GLfloat*)&bufferPos->data[viewTan->offset + (accessors[tangents].size * k) + dataStride]);
-				vertices[k].tangent.z = endian.littleFloat(*(GLfloat*)&bufferPos->data[viewTan->offset + (accessors[tangents].size * k) + (dataStride * 2)]);
+				vertices[k].tangent.x = endian.littleFloat(*(GLfloat*)&bufferTan->data[viewTan->offset + (accessors[tangents].size * k)]);
+				vertices[k].tangent.y = endian.littleFloat(*(GLfloat*)&bufferTan->data[viewTan->offset + (accessors[tangents].size * k) + dataStride]);
+				vertices[k].tangent.z = endian.littleFloat(*(GLfloat*)&bufferTan->data[viewTan->offset + (accessors[tangents].size * k) + (dataStride * 2)]);
 
 				dataStride = this->GetComponentSize(accessors[texCoords0].componentType);
 				vertices[k].texCoord0.x = endian.littleFloat(*(GLfloat*)&bufferPos->data[viewTan->offset + (accessors[texCoords0].size * k)]);
@@ -313,9 +313,9 @@ glTFFile* Loader::LoadFile(const char *filePath)
 			node->mesh = value[i]["mesh"].GetUint();
 			node->hasMesh = GL_TRUE;
 			Mesh *mesh = &meshes[node->mesh];
-			for (GLint i = 0; i < mesh->primitivesCount; i++)
+			for (GLuint j = 0; j < mesh->primitivesCount; j++)
 			{
-				Box tmpBox = mesh->boundingBoxes[i];
+				Box tmpBox = mesh->boundingBoxes[j];
 				boundingBox.bounds[1].x = tmpBox.bounds[1].x > boundingBox.bounds[1].x ? tmpBox.bounds[1].x : boundingBox.bounds[1].x;
 				boundingBox.bounds[1].y = tmpBox.bounds[1].y > boundingBox.bounds[1].y ? tmpBox.bounds[1].y : boundingBox.bounds[1].y;
 				boundingBox.bounds[1].z = tmpBox.bounds[1].z > boundingBox.bounds[1].z ? tmpBox.bounds[1].z : boundingBox.bounds[1].z;
