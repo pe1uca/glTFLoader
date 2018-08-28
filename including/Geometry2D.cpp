@@ -312,3 +312,52 @@ bool OrientedRectangleOrientedRectangle(const OrientedRectangle& r1, const Orien
 	local2.position = r + r1.halfExtents;
 	return RectangleOrientedRectangle(local1, local2);
 }
+
+Circle ContainingCircle(std::vector<Point2D> points)
+{
+	Point2D center;
+	for (auto it = points.begin(); it != points.end(); ++it)
+	{
+		center = center + *it;
+	}
+	center = center * (1.0f / (float)points.size());
+	Circle result(center, 1.0f);
+	result.radius = MagnitudeSq(center - points[0]);
+	for (auto it = points.begin(); it != points.end(); ++it)
+	{
+		float distance = MagnitudeSq(center - *it);
+		if (distance > result.radius)
+			result.radius = distance;
+	}
+	result.radius = sqrtf(result.radius);
+	return result;
+}
+
+Rectangle2D ContainingRectangle(std::vector<Point2D> points)
+{
+	vec2 min = points[0];
+	vec2 max = points[0];
+	for (auto it = points.begin(); it != points.end(); ++it)
+	{
+		min.x = (*it).x < min.x ? (*it).x : min.x;
+		min.y = (*it).y < min.y ? (*it).y : min.y;
+		max.x = (*it).x > max.x ? (*it).x : max.x;
+		max.x = (*it).x > max.x ? (*it).x : max.x;
+	}
+	return FromMinMax(min, max);
+}
+
+bool PointInShape(const BoundingShape& shape, const Point2D& point)
+{
+	for (auto it = shape.circles.begin(); it != shape.circles.end(); ++it)
+	{
+		if (PointInCircle(point, *it))
+			return true;
+	}
+	for (auto it = shape.rectangles.begin(); it != shape.rectangles.end(); ++it)
+	{
+		if (PointInRectangle(point, *it))
+			return true;
+	}
+	return false;
+}

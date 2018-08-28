@@ -3,6 +3,7 @@
 #define _GEOMETRY_2D_H_
 
 #include "vectors.h"
+#include <vector>
 
 #define PointLine(point, line) PointOnLine(point, line)
 #define LinePoint(line, point) PointOnLine(point, line)
@@ -49,6 +50,10 @@ typedef struct Interval2D {
 	float min;
 	float max;
 } Interval2D;
+typedef struct BoundingShape {
+	std::vector<Circle> circles;
+	std::vector<Rectangle2D> rectangles;
+} BoundingShape;
 
 float Lenght(const Line2D& line);
 float LenghtSq(const Line2D& line);
@@ -80,6 +85,12 @@ bool OverlapOnAxis(const Rectangle2D& rect1, const OrientedRectangle& rect2, con
 bool RectangleOrientedRectangle(const Rectangle2D& rect1, const OrientedRectangle& rect2);
 
 bool OrientedRectangleOrientedRectangle(const OrientedRectangle& r1, const OrientedRectangle& r2);
+
+Circle ContainingCircle(std::vector<Point2D> points);
+
+Rectangle2D ContainingRectangle(std::vector<Point2D> points);
+
+bool PointInShape(const BoundingShape& shape, const Point2D& point);
 
 #endif // !_GEOMETRY_2D_H_
 
