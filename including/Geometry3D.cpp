@@ -176,18 +176,18 @@ bool SpherePlane(const Sphere& sphere, const Plane& plane)
 
 Interval GetInterval(const AABB& aabb, const vec3& axis)
 {
-	vec3 i = GetMin(aabb);
-	vec3 a = GetMax(aabb);
+	vec3 min = GetMin(aabb);
+	vec3 max = GetMax(aabb);
 
 	vec3 vertex[8] = {
-		vec3(i.x, a.y, a.z),
-		vec3(i.x, a.y, i.z),
-		vec3(i.x, i.y, a.z),
-		vec3(i.x, i.y, i.z),
-		vec3(a.x, a.y, a.z),
-		vec3(a.x, a.y, i.z),
-		vec3(a.x, i.y, a.z),
-		vec3(a.x, i.y, i.z)
+		vec3(min.x, max.y, max.z),
+		vec3(min.x, max.y, min.z),
+		vec3(min.x, min.y, max.z),
+		vec3(min.x, min.y, min.z),
+		vec3(max.x, max.y, max.z),
+		vec3(max.x, max.y, min.z),
+		vec3(max.x, min.y, max.z),
+		vec3(max.x, min.y, min.z)
 	};
 
 	Interval result;
@@ -340,4 +340,169 @@ bool PlanePlane(const Plane& plane1, const Plane& plane2)
 {
 	vec3 d = Cross(plane1.normal, plane2.normal);
 	return CMP(Dot(d, d), 0.0f);
+}
+
+float Raycast(const Sphere& sphere, const Ray& ray)
+{
+	vec3 e = sphere.position - ray.origin;
+	float rSq = sphere.radius * sphere.radius;
+	float eSq = MagnitudeSq(e);
+	float a = Dot(e, ray.direction);
+	float bSq = eSq - (a * a);
+	
+	if (rSq - bSq < 0.0f)
+		return -1;
+	
+	float f = sqrt(rSq - bSq);
+	return eSq < rSq ? a + f : a - f; //inside the spehre : outside
+}
+float Raycast(const AABB& aabb, const Ray& ray)
+{
+	vec3 min = GetMin(aabb);
+	vec3 max = GetMax(aabb);
+
+	float idx = 1 / (CMP(ray.direction.x, 0.0f) ? 0.00001f : ray.direction.x);
+	float idy = 1 / (CMP(ray.direction.y, 0.0f) ? 0.00001f : ray.direction.y);
+	float idz = 1 / (CMP(ray.direction.z, 0.0f) ? 0.00001f : ray.direction.z);
+	float t1 = (min.x - ray.origin.x) * idx;
+	float t2 = (max.x - ray.origin.x) * idx;
+	float t3 = (min.y - ray.origin.y) * idy;
+	float t4 = (max.y - ray.origin.y) * idy;
+	float t5 = (min.z - ray.origin.z) * idz;
+	float t6 = (max.z - ray.origin.z) * idz;
+
+	float tmin = fmaxf(
+		fmaxf(
+			fminf(t1, t2),
+			fminf(t3, t4)
+		),
+		fminf(t5, t6)
+	);
+	float tmax = fminf(
+		fminf(
+			fmaxf(t1, t2),
+			fmaxf(t3, t4)
+		),
+		fmaxf(t5, t6)
+	);
+
+	if (tmax < 0.0f)
+		return -1;
+
+	if (tmin > tmax)
+		return -1;
+
+	if (tmin < 0.0f)
+		return tmax;
+
+	return tmin;
+}
+float Raycast(const OBB& obb, const Ray& ray)
+{
+	const float* o = obb.orientation.asArray;
+	const float* size = obb.size.asArray;
+	vec3 X(o[0], o[1], o[2]);
+	vec3 Y(o[3], o[4], o[5]);
+	vec3 Z(o[6], o[7], o[8]);
+
+	vec3 p = obb.position - ray.origin;
+
+	vec3 f(
+		Dot(X, ray.direction),
+		Dot(Y, ray.direction),
+		Dot(Z, ray.direction)
+	);
+
+	vec3 e(
+		Dot(X, p),
+		Dot(Y, p),
+		Dot(Z, p)
+	);
+
+	float t[6] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+	for (int i = 0; i < 3; ++i)
+	{
+		if (CMP(f[i], 0.0f))
+		{
+			if (-e[i] - size[i] > 0.0f || -e[i] + size[i] < 0.0f)
+				return -1;
+			f[i] = 0.00001f;
+		}
+		float inverse = 1.0f / f[i];
+		t[i * 2 + 0] = (e[i] + size[i]) * inverse;
+		t[i * 2 + 0] = (e[i] - size[i]) * inverse;
+	}
+
+	float tmin = fmaxf(
+		fmaxf(
+			fminf(t[1], t[2]),
+			fminf(t[3], t[4])
+		),
+		fminf(t[5], t[6])
+	);
+	float tmax = fminf(
+		fminf(
+			fmaxf(t[1], t[2]),
+			fmaxf(t[3], t[4])
+		),
+		fmaxf(t[5], t[6])
+	);
+
+	if (tmax < 0.0f)
+		return -1;
+
+	if (tmin > tmax)
+		return -1;
+
+	if (tmin < 0.0f)
+		return tmax;
+
+	return tmin;
+}
+float Raycast(const Plane& plane, const Ray& ray)
+{
+	float nd = Dot(ray.direction, plane.normal);
+	if (nd >= 0.0f)
+		return -1;
+	float pn = Dot(ray.origin, plane.normal);
+	float t = (plane.distance - pn) / nd;
+
+	if (t >= 0.0f)
+		return t;
+	return -1;
+}
+
+bool Linetest(const Sphere& sphere, const Line& line)
+{
+	Point closest = ClosestPoint(line, sphere.position);
+	return MagnitudeSq(sphere.position - closest) <= sphere.radius * sphere.radius;
+}
+bool Linetest(const AABB& aabb, const Line& line)
+{
+	Ray ray;
+	ray.origin = line.start;
+	ray.direction = Normalized(line.end - line.start);
+	float t = Raycast(aabb, ray);
+	return t >= 0.0f && t * t <= LenghtSq(line);
+}
+bool Linetest(const OBB& obb, const Line& line)
+{
+	Ray ray;
+	ray.origin = line.start;
+	ray.direction = Normalized(line.end - line.start);
+	float t = Raycast(obb, ray);
+	return t >= 0.0f && t * t <= LenghtSq(line);
+}
+bool Linetest(const Plane& plane, const Line& line)
+{
+	vec3 ab = line.end - line.start;
+
+	float nA = Dot(plane.normal, line.start);
+	float nAB = Dot(plane.normal, ab);
+
+	if (CMP(nAB, 0.0f))
+		return false;
+
+	float t = (plane.distance - nA) / nAB;
+	return t >= 0.0f && t <= 1.0f;
 }
