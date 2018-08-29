@@ -95,4 +95,22 @@ AABB FromMinMax(const vec3& min, const vec3& max);
 
 float PlaneEquation(const Point& point, const Plane& plane);
 
+bool PointInSphere(const Point& point, const Sphere& sphere);
+Point ClosestPoint(const Sphere& sphere, const Point& point);
+
+bool PointInAABB(const Point& point, const AABB& aabb);
+Point ClosestPoint(const AABB& aabb, const Point& point);
+
+bool PointInOBB(const Point& point, const OBB& obb);
+Point ClosestPoint(const OBB& obb, const Point& point);
+
+bool PointOnPlane(const Point& point, const Plane& plane);
+Point ClosestPoint(const Plane& plane, const Point& point);
+
+bool PointOnLine(const Point& point, const Line& line);
+Point ClosestPoint(const Line& line, const Point& point);
+
+bool PointOnRay(const Point& point, const Ray& ray);
+Point ClosestPoint(const Ray& ray, const Point& point);
+
 #endif // !_GEOMETRY_3D_H_
