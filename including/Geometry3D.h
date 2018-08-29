@@ -5,6 +5,13 @@
 #include "vectors.h"
 #include "matrices.h"
 
+#define AABBSphere(aabb, sphere) SphereAABB(sphere, aabb)
+#define OBBSphere(obb, sphere) SphereOBB(sphere, obb)
+#define PlaneSphere(plane, sphere) SpherePlane(sphere, plane)
+#define OBBAABB(obb, aabb) AABBOBB(aabb, obb)
+#define PlaneAABB(plane, aabb) AABBPlane(aabb, plane)
+#define PlaneOBB(plane, obb) OBBPlane(obb, plane)
+
 typedef vec3 Point;
 
 #pragma warning(push)
@@ -82,6 +89,10 @@ typedef struct Triangle {
 	inline Triangle(const Point& p1, const Point& p2, const Point& p3) :
 		a(p1), b(p2), c(p3) {}
 } Triangle;
+typedef struct Interval {
+	float min;
+	float max;
+} Interval;
 #pragma warning(pop)
 
 float Lenght(const Line& line);
@@ -112,5 +123,25 @@ Point ClosestPoint(const Line& line, const Point& point);
 
 bool PointOnRay(const Point& point, const Ray& ray);
 Point ClosestPoint(const Ray& ray, const Point& point);
+
+bool SphereSphere(const Sphere& s1, const Sphere& s2);
+bool SphereAABB(const Sphere& sphere, const AABB& aabb);
+bool SphereOBB(const Sphere& sphere, const OBB& obb);
+bool SpherePlane(const Sphere& sphere, const Plane& plane);
+
+Interval GetInterval(const AABB& aabb, const vec3& axis);
+Interval GetInterval(const OBB& obb, const vec3& axis);
+bool OverlapOnAxis(const AABB& aabb, const OBB& obb, const vec3& axis);
+bool OverlapOnAxis(const OBB& obb1, const OBB& obb2, const vec3& axis);
+
+bool AABBAABB(const AABB& aabb1, const AABB& aabb2);
+bool AABBOBB(const AABB& aabb, const OBB& obb);
+bool AABBPlane(const AABB& aabb, const Plane& plane);
+
+bool OBBOBB(const OBB& obb1, const OBB& obb2);
+bool OBBPlane(const OBB& obb, const Plane& plane);
+
+bool PlanePlane(const Plane& plane1, const Plane& plane2);
+
 
 #endif // !_GEOMETRY_3D_H_
