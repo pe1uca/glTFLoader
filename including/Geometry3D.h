@@ -4,6 +4,7 @@
 
 #include "vectors.h"
 #include "matrices.h"
+#include <vector>
 
 #define AABBSphere(aabb, sphere) SphereAABB(sphere, aabb)
 #define OBBSphere(obb, sphere) SphereOBB(sphere, obb)
@@ -11,6 +12,10 @@
 #define OBBAABB(obb, aabb) AABBOBB(aabb, obb)
 #define PlaneAABB(plane, aabb) AABBPlane(aabb, plane)
 #define PlaneOBB(plane, obb) OBBPlane(obb, plane)
+#define SphereTriangle(sphere, triangle) TriangleSphere(triangle, sphere)
+#define AABBTriangle(aabb, triangle) TriangleAABB(triangle, aabb)
+#define OBBTriangle(obb, triangle) TriangleOBB(triangle, obb)
+#define PlaneTriangle(plane, triangle) TrianglePlane(triangle, plane)
 
 typedef vec3 Point;
 
@@ -93,6 +98,21 @@ typedef struct Interval {
 	float min;
 	float max;
 } Interval;
+typedef struct BVHNode {
+	AABB bounds;
+	std::vector<BVHNode> children;
+	std::vector<int> triangles;
+} BVHNode;
+typedef struct Mesh {
+	int numTriangles;
+	union {
+		Triangle* triangles;
+		Point* vertices;
+		float* values;
+	};
+	BVHNode* accelerator;
+	Mesh() : numTriangles(0), values(nullptr), accelerator(nullptr) {}
+} Mesh;
 #pragma warning(pop)
 
 float Lenght(const Line& line);
@@ -153,5 +173,40 @@ bool Linetest(const AABB& aabb, const Line& line);
 bool Linetest(const OBB& obb, const Line& line);
 bool Linetest(const Plane& plane, const Line& line);
 
+Plane FromTriangle(const Triangle& t);
+
+bool PointInTriangle(const Point& p, const Triangle& t);
+Point ClosestPoint(const Triangle& t, const Point& p);
+
+Interval GetInterval(const Triangle& triangle, const vec3& axis);
+bool OverlapOnAxis(const AABB& aabb, const Triangle& triangle, const vec3& axis);
+bool OverlapOnAxis(const OBB& obb, const Triangle& triangle, const vec3& axis);
+bool OverlapOnAxis(const Triangle& t1, const Triangle& t2, const vec3& axis);
+
+bool TriangleSphere(const Triangle& t, const Sphere& s);
+bool TriangleAABB(const Triangle& t, const AABB& aabb);
+bool TriangleOBB(const Triangle& t, const OBB& obb);
+bool TrianglePlane(const Triangle& t, const Plane& p);
+bool TriangleTriangle(const Triangle& t1, const Triangle& t2);
+
+vec3 SatCrossEdge(const vec3& a, const vec3& b, const vec3& c, const vec3& d);
+bool TriangleTriangleRobust(const Triangle& t1, const Triangle& t2);
+
+vec3 Barycentric(const Point& p, const Triangle& t);
+float Raycast(const Triangle& triangle, const Ray& ray);
+bool Linetest(const Triangle& triangle, const Line& line);
+
+void AccelerateMesh(Mesh& mesh);
+void SplitBVHNode(BVHNode* node, const Mesh& model, int depth);
+void FreeBVHNode(BVHNode* node);
+
+float MeshRay(const Mesh& mesh, const Ray& ray);
+bool MeshSphere(const Mesh& mesh, const Sphere& sphere);
+bool MeshAABB(const Mesh& mesh, const AABB& aabb);
+bool MeshOBB(const Mesh& mesh, const OBB& obb);
+bool MeshPlane(const Mesh& mesh, const Plane& plane);
+bool MeshTriangle(const Mesh& mesh, const Triangle& triangle);
+
+bool Linetest(const Mesh& mesh, const Line& line);
 
 #endif // !_GEOMETRY_3D_H_
