@@ -1,5 +1,5 @@
 #include "Engine.h"
-
+#include "Tools.h"
 #include <iostream>
 #include <map>
 
@@ -37,14 +37,15 @@ ErrorCalls Engine::init(void* /*_init*/)
 
 	this->mLoader = new Loader();
 	this->mCamera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
-
+	ConsoleOn = false;
+	//mConsoleBuffer = "";
 	return ErrorCalls::SUCCESS;
 }
 
 void Engine::release()
 {
-	delete this->mLoader;
-
+	FREE_MEMORY(mLoader);
+	FREE_MEMORY(mCamera);
 	glfwTerminate();
 }
 
@@ -86,13 +87,42 @@ GLboolean Engine::initiWindow()
 	{
 		((Engine*)(glfwGetWindowUserPointer(window)))->scroll_callback(window, xoffset, yoffset);
 	});
+
+	glfwSetKeyCallback(this->mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+	{
+		((Engine*)(glfwGetWindowUserPointer(window)))->key_callback(window, key, scancode, action, mods);
+	});
 	glfwSetInputMode(this->mWindow, GLFW_STICKY_MOUSE_BUTTONS, GLFW_PRESS);
 
 	// tell GLFW to capture our mouse
 	//glfwSetInputMode(this->mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	return GL_TRUE;
 }
-
+void Engine::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (ConsoleOn)
+	{
+		if (keyPressed(key))
+		{
+			if (key == GLFW_KEY_ENTER)
+			{
+				mConsoleBuffer = "\n";
+				return;
+			}
+			if (key == GLFW_KEY_BACKSPACE)
+			{
+				if (!mConsoleBuffer.empty())
+				{
+					mConsoleBuffer.pop_back();
+					return;
+				}
+			}
+			if (key == GLFW_KEY_ESCAPE)
+				ConsoleOn = false;
+			mConsoleBuffer.push_back((char)(key));
+		}
+	}
+}
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void Engine::framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height)
@@ -160,17 +190,27 @@ void Engine::scroll_callback(GLFWwindow* /*window*/, double /*xoffset*/, double 
 // ---------------------------------------------------------------------------------------------------------
 void Engine::processInput(GLfloat deltaTime)
 {
-	if (glfwGetKey(this->mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(this->mWindow, true);
-
-	if (glfwGetKey(this->mWindow, GLFW_KEY_W) == GLFW_PRESS)
-		mCamera->ProcessKeyboard(FORWARD, deltaTime);
-	if (glfwGetKey(this->mWindow, GLFW_KEY_S) == GLFW_PRESS)
-		mCamera->ProcessKeyboard(BACKWARD, deltaTime);
-	if (glfwGetKey(this->mWindow, GLFW_KEY_A) == GLFW_PRESS)
-		mCamera->ProcessKeyboard(LEFT, deltaTime);
-	if (glfwGetKey(this->mWindow, GLFW_KEY_D) == GLFW_PRESS)
-		mCamera->ProcessKeyboard(RIGHT, deltaTime);
+	if (keyPressed(GLFW_KEY_ESCAPE))
+	{
+		if (!ConsoleOn)
+			glfwSetWindowShouldClose(this->mWindow, true);
+	}
+	if (keyPressed(GLFW_KEY_ENTER) && !ConsoleOn)
+	{
+		std::cout << "Consola prendida \n";
+		ConsoleOn = true;
+	}
+	if (!ConsoleOn)
+	{
+		if (glfwGetKey(this->mWindow, GLFW_KEY_W) == GLFW_PRESS)
+			mCamera->ProcessKeyboard(FORWARD, deltaTime);
+		if (glfwGetKey(this->mWindow, GLFW_KEY_S) == GLFW_PRESS)
+			mCamera->ProcessKeyboard(BACKWARD, deltaTime);
+		if (glfwGetKey(this->mWindow, GLFW_KEY_A) == GLFW_PRESS)
+			mCamera->ProcessKeyboard(LEFT, deltaTime);
+		if (glfwGetKey(this->mWindow, GLFW_KEY_D) == GLFW_PRESS)
+			mCamera->ProcessKeyboard(RIGHT, deltaTime);
+	}
 }
 
 GLboolean Engine::keyPressed(int key)
@@ -218,7 +258,11 @@ void Engine::SetShouldClose(GLboolean value)
 void Engine::update(GLfloat deltaTime)
 {
 	this->processInput(deltaTime);
-
+	if (!mConsoleBuffer.empty())
+	{
+		std::cout << mConsoleBuffer;
+		mConsoleBuffer.clear();
+	}
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -227,6 +271,7 @@ void Engine::render()
 {
 	glfwSwapBuffers(this->mWindow);
 	glfwPollEvents();
+	
 }
 
 GLint Engine::registerBoundingBox(Box box)

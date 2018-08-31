@@ -75,7 +75,13 @@
       "min": [
         0.0
       ]
-    }
+    }, 
+	{
+	"bufferView": 5,
+      "componentType": 0,
+      "count": 1,
+      "type": "TEXT"
+	}
   ],
   "asset": {
     "version": "2.0"
@@ -110,7 +116,12 @@
       "buffer": 0,
       "byteOffset": 25920,
       "byteLength": 1656
-    }
+    },
+	{
+	  "buffer": 0,
+      "byteOffset": 343476,
+      "byteLength": 2
+	}
   ],
   "materials": [
     {

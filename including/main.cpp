@@ -1,18 +1,19 @@
 #include "Game.h"
-
+//#include <vld.h>
 
 int main()
 {
-	Game* game = new Game();
+	Game game;
 
-	if (!game->init())
+	if (!game.init())
 	{
-		return game->GetExitValue();
+		game.release();
+		return game.GetExitValue();
 	}
 
-	game->run();
+	game.run();
 
-	game->release();
+	game.release();
 
-	return game->GetExitValue();
+	return game.GetExitValue();
 }

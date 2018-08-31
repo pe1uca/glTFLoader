@@ -177,8 +177,10 @@ void Game::render()
 void Game::release()
 {
 
-	delete this->basicShader;
-	delete this->bamboo;
+	FREE_MEMORY(basicShader);
+	FREE_MEMORY(bamboo);
+	FREE_MEMORY(pbrShader);
+	FREE_MEMORY(simpleShader);
 	//delete this->models;
 	Engine::CloseModule();
 }

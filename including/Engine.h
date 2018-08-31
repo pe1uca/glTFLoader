@@ -49,6 +49,8 @@ public:
 	GLfloat GetNearPlane() { return this->nearPlane; }
 	GLfloat GetAspectRatio() { return this->aspectRatio; }
 
+	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 private:
 	GLFWwindow* mWindow;
 	GLuint SCR_WIDTH = 1280;
@@ -66,6 +68,8 @@ private:
 
 	GLboolean initiWindow();
 
+	bool ConsoleOn;
+	std::string mConsoleBuffer;
 	void processInput(GLfloat deltaTime);
 
 };
