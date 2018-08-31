@@ -1,6 +1,4 @@
 #pragma once
-#ifndef _MATH_MATRICES_H_
-#define _MATH_MATRICES_H_
 
 #include "vectors.h"
 
@@ -174,6 +172,3 @@ mat4 LookAt(const vec3& position, const vec3& target, const vec3& up);
 
 mat4 Projection(float fov, float aspect, float zNear, float zFar);
 mat4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
-
-
-#endif // !_MATH_MATRICES_H_

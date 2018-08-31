@@ -1095,3 +1095,163 @@ bool MeshTriangle(const Mesh& mesh, const Triangle& triangle)
 	}
 	return false;
 }
+bool Linetest(const Mesh& mesh, const Line& line)
+{
+	if (mesh.accelerator == nullptr)
+	{
+		for (int i = 0; i < mesh.numTriangles; ++i)
+			if (Linetest(mesh.triangles[i], line))
+				return true;
+	}
+	else
+	{
+		std::list<BVHNode*> toProcess;
+		toProcess.push_front(mesh.accelerator);
+		while (!toProcess.empty())
+		{
+			BVHNode* iterator = *(toProcess.begin());
+			toProcess.erase(toProcess.begin());
+
+			if (!iterator->triangles.empty())
+			{
+				for (auto it = iterator->triangles.begin(); it != iterator->triangles.end(); ++it)
+				{
+					if (Linetest(mesh.triangles[(*it)], line))
+						return true;
+				}
+			}
+
+			if (!iterator->children.empty())
+			{
+				for (auto it = iterator->children.rbegin(); it != iterator->children.rend(); ++it)
+				{
+					if (Linetest((*it).bounds, line))
+						toProcess.push_front(&(*it));
+				}
+			}
+		}
+	}
+	return false;
+}
+
+void Model::SetContent(Mesh* mesh)
+{
+	content = mesh;
+	if (content != nullptr)
+	{
+		vec3 min = mesh->vertices[0];
+		vec3 max = mesh->vertices[0];
+
+		for (int i = 1; i < mesh->numTriangles * 3; ++i)
+		{
+			min.x = fminf(mesh->vertices[i].x, min.x);
+			min.y = fminf(mesh->vertices[i].y, min.y);
+			min.z = fminf(mesh->vertices[i].z, min.z);
+			max.x = fmaxf(mesh->vertices[i].x, max.x);
+			max.y = fmaxf(mesh->vertices[i].y, max.y);
+			max.z = fmaxf(mesh->vertices[i].z, max.z);
+		}
+		bounds = FromMinMax(min, max);
+	}
+}
+mat4 GetWorldMatrix(const Model& model)
+{
+	mat4 translation = Translation(model.position);
+	mat4 rotation = Rotation(model.rotation.x, model.rotation.y, model.rotation.z);
+	mat4 localMat = rotation * translation;
+	mat4 parentMat;
+	if (model.parent != nullptr)
+		parentMat = GetWorldMatrix(*model.parent);
+	return localMat * parentMat;
+}
+OBB GetOBB(const Model& model)
+{
+	mat4 world = GetWorldMatrix(model);
+	AABB aabb = model.GetBounds();
+	OBB obb;
+	obb.size = aabb.size;
+	obb.position = MultiplyPoint(aabb.position, world);
+	obb.orientation = Cut(world, 3, 3);
+	return obb;
+}
+
+float ModelRay(const Model& model, const Ray& ray)
+{
+	if (model.GetMesh() == nullptr)
+		return -1;
+
+	mat4 inv = Inverse(GetWorldMatrix(model));
+	Ray local;
+	local.origin = MultiplyPoint(ray.origin, inv);
+	local.direction = MultiplyVector(ray.origin, inv);
+	local.NormalizeDirection();
+	return MeshRay(*(model.GetMesh()), local);
+}
+bool Linetest(const Model& model, const Line& line)
+{
+	if (model.GetMesh() == nullptr)
+		return false;
+
+	mat4 inv = Inverse(GetWorldMatrix(model));
+	Line local;
+	local.start = MultiplyPoint(line.start, inv);
+	local.end = MultiplyPoint(line.end, inv);
+	return Linetest(*(model.GetMesh()), local);
+}
+bool ModelSphere(const Model& model, const Sphere& sphere)
+{
+	if (model.GetMesh() == nullptr)
+		return false;
+
+	mat4 inv = Inverse(GetWorldMatrix(model));
+	Sphere local;
+	local.position = MultiplyPoint(sphere.position, inv);
+	return MeshSphere(*(model.GetMesh()), local);
+}
+bool ModelAABB(const Model& model, const AABB& aabb)
+{
+	if (model.GetMesh() == nullptr)
+		return false;
+
+	mat4 inv = Inverse(GetWorldMatrix(model));
+	OBB local;
+	local.size = aabb.size;
+	local.position = MultiplyPoint(aabb.position, inv);
+	local.orientation = Cut(inv, 3, 3);
+	return MeshOBB(*(model.GetMesh()), local);
+}
+bool ModelOBB(const Model& model, const OBB& obb)
+{
+	if (model.GetMesh() == nullptr)
+		return false;
+
+	mat4 inv = Inverse(GetWorldMatrix(model));
+	OBB local;
+	local.size = obb.size;
+	local.position = MultiplyPoint(obb.position, inv);
+	local.orientation = obb.orientation * Cut(inv, 3, 3);
+	return MeshOBB(*(model.GetMesh()), local);
+}
+bool ModelPlane(const Model& model, const Plane& plane)
+{
+	if (model.GetMesh() == nullptr)
+		return false;
+
+	mat4 inv = Inverse(GetWorldMatrix(model));
+	Plane local;
+	local.normal = MultiplyVector(plane.normal, inv);
+	local.distance = plane.distance;
+	return MeshPlane(*(model.GetMesh()), local);
+}
+bool ModelTriangle(const Model& model, const Triangle& triangle)
+{
+	if (model.GetMesh() == nullptr)
+		return false;
+
+	mat4 inv = Inverse(GetWorldMatrix(model));
+	Triangle local;
+	local.a = MultiplyPoint(triangle.a, inv);
+	local.b = MultiplyPoint(triangle.b, inv);
+	local.c = MultiplyPoint(triangle.c, inv);
+	return MeshTriangle(*(model.GetMesh()), local);
+}

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef _MATH_VECTORS_H_
-#define _MATH_VECTORS_H_
 
 #define RAD2DEG(x) ((x) * 57.295754f)
 #define DEG2RAD(x) ((x) * 0.0174533f)
@@ -88,8 +86,3 @@ vec3 Perpendicular(const vec3& len, const vec3& dir);
 
 vec2 Reflection(const vec2& vec, const vec2& normal);
 vec3 Reflection(const vec3& vec, const vec3& normal);
-
-
-#endif // !_MATH_VECTORS_H_
-
-

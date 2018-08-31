@@ -1,6 +1,4 @@
 #pragma once
-#ifndef _GEOMETRY_3D_H_
-#define _GEOMETRY_3D_H_
 
 #include "vectors.h"
 #include "matrices.h"
@@ -115,6 +113,21 @@ typedef struct Mesh {
 } Mesh;
 #pragma warning(pop)
 
+class Model {
+protected:
+	Mesh* content;
+	AABB bounds;
+public:
+	vec3 position;
+	vec3 rotation;
+	Model* parent;
+	
+	inline Model() : parent(nullptr), content(nullptr) {}
+	inline Mesh* GetMesh() const { return content; }
+	inline AABB GetBounds() const { return bounds; }
+	void SetContent(Mesh* mesh);
+};
+
 float Lenght(const Line& line);
 float LenghtSq(const Line& line);
 
@@ -206,7 +219,15 @@ bool MeshAABB(const Mesh& mesh, const AABB& aabb);
 bool MeshOBB(const Mesh& mesh, const OBB& obb);
 bool MeshPlane(const Mesh& mesh, const Plane& plane);
 bool MeshTriangle(const Mesh& mesh, const Triangle& triangle);
-
 bool Linetest(const Mesh& mesh, const Line& line);
 
-#endif // !_GEOMETRY_3D_H_
+mat4 GetWorldMatrix(const Model& model);
+OBB GetOBB(const Model& model);
+
+float ModelRay(const Model& model, const Ray& ray);
+bool Linetest(const Model& model, const Line& line);
+bool ModelSphere(const Model& model, const Sphere& sphere);
+bool ModelAABB(const Model& model, const AABB& aabb);
+bool ModelOBB(const Model& model, const OBB& obb);
+bool ModelPlane(const Model& model, const Plane& plane);
+bool ModelTriangle(const Model& model, const Triangle& triangle);

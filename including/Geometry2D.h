@@ -1,6 +1,4 @@
 #pragma once
-#ifndef _GEOMETRY_2D_H_
-#define _GEOMETRY_2D_H_
 
 #include "vectors.h"
 #include <vector>
@@ -91,6 +89,3 @@ Circle ContainingCircle(std::vector<Point2D> points);
 Rectangle2D ContainingRectangle(std::vector<Point2D> points);
 
 bool PointInShape(const BoundingShape& shape, const Point2D& point);
-
-#endif // !_GEOMETRY_2D_H_
-

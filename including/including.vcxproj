@@ -161,6 +161,7 @@
     <ClCompile Include="matrices.cpp" />
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="vectors.cpp" />
   </ItemGroup>
@@ -178,6 +179,7 @@
     <ClInclude Include="Module.h" />
     <ClInclude Include="QuadTree.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Tools.h" />
     <ClInclude Include="Types.h" />

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef _QUAD_TREE_H_
-#define _QUAD_TREE_H_
 
 #include "Geometry2D.h"
 #include <vector>
@@ -42,5 +40,3 @@ public:
 
 template<typename T>
 using QuadTree = QuadTreeNode<T>;
-
-#endif // !_QUAD_TREE_H_
